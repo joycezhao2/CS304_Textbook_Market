@@ -20,6 +20,14 @@ app.config['TRAP_BAD_REQUEST_ERRORS'] = True
 def index():
     return render_template('main.html',title='Hello')
 
+@app.route('/submit/')
+def submit():
+    return render_template('testform.html')
+
+@app.route('/session/cart', methods=['GET','POST'])
+def session_cart():
+    return render_template('cart.html')
+
 @app.route('/greet/', methods=["GET", "POST"])
 def greet():
     if request.method == 'GET':

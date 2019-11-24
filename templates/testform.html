@@ -3,48 +3,42 @@
 {% block main_content %}
 <p>Click to <a href="{{ url_for('index') }}">return to the main page</a>.</p>
 
-<h1>Test Forms</h1>
+<h1>Textbook Sale Submission</h1>
 
-<h2>POST form</h2>
+<p>This page is for uploading information of the textbook you want to sell.</p>
 
 <form method="post" action="{{url_for('formecho')}}">
-<p><label>Name:
-    <input required type="text" name="user" size="50" placeholder="Arthur, King of the Britons"></label></p>
+    <p><label>Book Title:
+        <input required type="text" name="title" size="50"></label></p>
 
-<p><label>Quest:
-    <textarea required name="quest" rows="3" cols="50" placeholder="To seek the grail"></textarea>
-</label></p>
+    <p><label>Department:
+        <input required name="department" size="50"></label></p>
 
-<p><label>Favorite Color?
-        <select required name="color">
+    <p><lable>Course number:
+        <input required name="number" size="20"></lable></p> 
+        
+    <p><label>Professor (First & Last Name):
+        <input required name="prof" size="50"></label></p>
+    
+    <p><lable>Condition:
+        <select required name="condition">
             <option value="">choose</option>
-            <option>Blue</option>
-            <option value="yellow">No, yel...</option>
+            <option value="new">Brand New</option>
+            <option value="new-">Like New</option>
+            <option value="good+">Very Good</option>
+            <option value="good">Good</option>
+            <option value="acceptable">Acceptable</option>
         </select>
-</label></p>
+    </lable></p>
 
-<p><input type="submit" value="process form">
+    <p><lable>Comments:
+        <textarea name="comments" rows=4 cols=50></textarea>
+    </lable></p>
+
+    <p><label>Picture (JPEG or PNG):
+        <input type="file" name="pic" accept="image/png, image/jpeg">
+    </label></p>
+
+    <p><input type="submit" value="Submit">
 </form>
-
-<h2>GET form</h2>
-
-<form method="get" action="{{url_for('formecho')}}">
-<p><label>Name:
-    <input required type="text" name="user" size="50" placeholder="Arthur, King of the Britons"></label></p>
-
-<p><label>Quest:
-    <textarea required name="quest" rows="3" cols="50" placeholder="To seek the grail"></textarea>
-</label></p>
-
-<p><label>Favorite Color?
-        <select required name="color">
-            <option value="">choose</option>
-            <option>Blue</option>
-            <option value="yellow">No, yel...</option>
-        </select>
-</label></p>
-
-<p><input type="submit" value="process form">
-</form>
-
 {% endblock %}
