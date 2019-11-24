@@ -24,6 +24,10 @@ def index():
 def submit():
     return render_template('testform.html')
 
+@app.route('/session/cart', methods=['GET','POST'])
+def session_cart():
+    return render_template('cart.html')
+
 @app.route('/greet/', methods=["GET", "POST"])
 def greet():
     if request.method == 'GET':
