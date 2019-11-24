@@ -55,6 +55,14 @@ def formecho():
 def testform():
     return render_template('testform.html')
 
+@app.route('/book/<id>')
+def book(id):
+    return render_template('book.html')
+
+@app.route('/users/<username>')
+def user(username):
+    return render_template('users.html')  
+
 
 if __name__ == '__main__':
     import sys, os

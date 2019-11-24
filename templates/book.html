@@ -1,0 +1,26 @@
+<!doctype html>
+<html lang='en'>
+<head>
+    <meta charset='utf-8'>
+    <meta name=author content="Iman Hussain">
+    <title>{{ page_title }}</title>
+    <link rel='stylesheet' href="{{url_for('static', filename = 'style.css')}}">
+    {% block head_stuff %} {% endblock %}
+</head>
+
+{% block content %}
+
+<p><em>Click here to return to the <a href="/">home page.</a></em></p>
+
+<h1>Cracking the Coding Interview</h1>
+<p>By: Gayle Laakmann McDowell</p>
+<p>Price: $37.20</p>
+<p>Sold Status: Unsold</p>
+<p>Condition: Great</p>
+<img src="crackingTheCodingInterview.jpg" alt="Cracking the Coding Interview Book Cover">
+<p>Seller: <a href="users.html">Wendy Wellesley</a></p>
+<button type="button"> Add to Cart </button>
+
+{% endblock %}
+
+</html>
