@@ -1,14 +1,6 @@
-<!doctype html>
-<html lang='en'>
-<head>
-    <meta charset='utf-8'>
-    <meta name=author content="Iman Hussain">
-    <title>{{ page_title }}</title>
-    <link rel='stylesheet' href="{{url_for('static', filename = 'style.css')}}">
-    {% block head_stuff %} {% endblock %}
-</head>
+{% extends "base.html" %}
 
-{% block content %}
+{% block main_content %}
 
 <p><em>Click here to return to the <a href="/">home page.</a></em></p>
 
@@ -20,20 +12,12 @@
 
     <h5>Selling: </h5>
     <ul>
-      <li><a href="{{url_for('book', id=123)}}">Cracking the Coding Interview</a></li>
-    </ul> 
-
-
-<!-- <p>Selling:</p>
-{# loop each book, list each book with SQL commands #}
-<ol>
-    {% for book in books %}
-
-    <li><a href="/id/{{A_books.id}}">{{book.title}}</a></li>
-
+    {% for book in selling %}
+        <li>
+            <a href="{{url_for('book', id=book)}}">Cracking the Coding Interview</a>
+        </li>
     {% endfor %}
-</ol> -->
-
+    </ul> 
 
 {% endblock %}
 

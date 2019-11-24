@@ -13,7 +13,7 @@
 <p>Seller: <a href="{{url_for('user', username=123)}}">Wendy Wellesley</a></p>
 
 <form method="POST" action="/addCart/">
-    <input type="hidden" name="bookid" value="123">
+    <input type="hidden" name="bookid" value={{id}}>
     <input type="submit" name="submit" value="Add to Cart">
 </form>
 

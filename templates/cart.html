@@ -6,7 +6,7 @@
 <h1>Your Cart</h1>
 <p>Take a look at the books you're interested in!</p>
 
-{% for book in books%}
+{% for book in cart.keys()%}
 <div>
     <h2>Title</h2>
     <ul>
@@ -15,7 +15,7 @@
         <li>Price</li>
     </ul>
     <form method="post" action="">
-        <input type="hidden" name="bookid" value="book">
+        <input type="hidden" name="bookid" value="123">
         <input type="submit" name="submit" value="Remove from Cart">
     </form>
 </div>
