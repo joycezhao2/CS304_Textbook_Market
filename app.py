@@ -24,9 +24,21 @@ def index():
 def submit():
     return render_template('testform.html')
 
-@app.route('/session/cart', methods=['GET','POST'])
+@app.route('/addCart/', methods=["POST"])
+def addCart():
+    cart = session.get('cart', []) 
+    book = request.form.get('bookid')
+    cart.append(book)
+    flash('Book added to cart successfully')
+    return redirect(request.referrer)
+
+@app.route('/session/cart/', methods=['GET','POST'])
 def session_cart():
-    return render_template('cart.html')
+    cart = session.get('cart', {}) 
+    if request.method == 'POST':
+        # removing from cart
+        item = request.form.get('bookid')
+    return render_template('cart.html', books=[1,2])
 
 @app.route('/greet/', methods=["GET", "POST"])
 def greet():
@@ -63,14 +75,26 @@ def formecho():
 def testform():
     return render_template('testform.html')
 
-@app.route('/book/<id>')
-def book(id):
-    return render_template('book.html')
+@app.route('/book/<id>/')
+def book(id):  
+    return render_template('book.html', id='123')
 
-@app.route('/user/<username>')
+@app.route('/users/<username>/')
 def user(username):
     return render_template('users.html') 
 
+@app.route('/bookreq/', methods=["POST"])
+def bookreq():
+    submit = request.form.get("submit")
+    if submit == "Book Information":
+        bid = request.form.get("bid")
+        print(bid)
+        return redirect(url_for('book',id=bid))
+    elif submit == "Seller Information":
+        uid = request.form.get("uid")
+        return redirect(url_for('users', username=uid))
+    else:
+        return redirect("/session/cart/")
 
 if __name__ == '__main__':
     import sys, os

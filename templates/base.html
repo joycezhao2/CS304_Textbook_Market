@@ -9,6 +9,9 @@
 </head>
 <body>
 
+<a href="{{url_for('submit')}}">Sell a Book</a>
+<a href="{{url_for('session_cart')}}">Your Cart</a>
+
 {% with messages = get_flashed_messages() %}
     {% if messages %}
         <div id="messages">

@@ -100,14 +100,14 @@
                     </ul>
                 </td>
                 <td>
-                    <p><input type="submit" value="Book Information"></p>
-                    <p><input type="submit" value="Seller Information"></p>
-                    <p><input type="submit" value="Add to Cart"></p>
+                    <p><input type="submit" name="submit" value="Book Information"></p>
+                    <p><input type="submit" name="submit" value="Seller Information"></p>
+                    <p><input type="submit" name="submit" value="Add to Cart"></p>
                 </td>
             </tr> 
         {% endfor %} -->
         
-        <tr data-book="1">
+        <tr>
             <td class="pic"></td>
             <td class="info">
                 <ul>
@@ -117,12 +117,15 @@
                 </ul>
             </td>
             <td>
-                <p><input type="submit" value="Book Information"></p>
-                <p><input type="submit" value="Seller Information"></p>
-                <p><input type="submit" value="Add to Cart"></p>
+                <form class="book" method="POST" action="/bookreq/">
+                <input type="hidden" name="bid" value="123">
+                <input type="hidden" name="uid" value="ypan2">
+                <p><input type="submit" name="submit" value="Book Information"></p>
+                <p><input type="submit" name="submit" value="Seller Information"></p>
+                <p><input type="submit" name="submit" value="Add to Cart"></p>
+                </form>
             </td>
         </tr>
-
     </table>
 </div>
 
