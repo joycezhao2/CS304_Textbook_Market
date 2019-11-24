@@ -67,9 +67,9 @@ def testform():
 def book(id):
     return render_template('book.html')
 
-@app.route('/users/<username>')
+@app.route('/user/<username>')
 def user(username):
-    return render_template('users.html')  
+    return render_template('users.html') 
 
 
 if __name__ == '__main__':

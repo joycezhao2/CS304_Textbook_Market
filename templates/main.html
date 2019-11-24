@@ -15,9 +15,10 @@
     <form class="filter" method="POST" action="">
         <p><label for="dept">Department:</label>
             <select id="dept" name="Department">
-                <!-- {{% for dept in departments %}}
+                <!-- {% for dept in departments %}
                 <option value="{{dept}}">{{dept}}</option>
-                {{% endfor %}} -->
+                {% endfor %} -->
+                <option value="">choose</option>
                 <option value="CS">Computer Science</option>
                 <option value="ECON">Economics</option>
                 <option value="ARTH">Art History</option>
@@ -27,9 +28,10 @@
         </p>
         <p><label for="num">Course Number:</label>
             <select id="num" name="Course Number">
-                <!-- {{% for num in numbers %}}
+                <!-- {% for num in numbers %}
                 <option value="{{num}}">{{num}}</option>
-                {{% endfor %}} -->
+                {% endfor %} -->
+                <option value="">choose</option>
                 <option value="100">100</option>
                 <option value="101">101</option>
                 <option value="106">106</option>
@@ -38,9 +40,10 @@
         </p>
         <p><label for="prof">Professor:</label>
             <select id="prof" name="Professor">
-                <!-- {{% for prof in professors %}}
+                <!-- {% for prof in professors %}
                 <option value="{{prof}}">{{prof}}</option>
-                {{% endfor %}} -->
+                {% endfor %} -->
+                <option value="">choose</option>
                 <option value="sanderson">Scott Anderson</option>
                 <option value="jwalsh">Julie Walsh</option>
                 <option value="jjoyce">Joseph Joyce</option>
@@ -48,6 +51,7 @@
         </p>
         <p><lable for="cond">Condition:</lable>
             <select id="cond" name="Condition">
+                    <option value="">choose</option>
                     <option value="new">Brand New</option>
                     <option value="new-">Like New</option>
                     <option value="good+">Very Good</option>
@@ -62,6 +66,7 @@
     <form id="crieteria" method="POST" action="">
         <p><lable for="sort">Sort by:</lable>
             <select id="sort" name="sorting">
+                <option value="">choose</option>
                 <option value="price up">Price low to high</option>
                 <option value="price down">Price high to low</option>
                 <option value="newest">Newest posted</option>
@@ -75,43 +80,46 @@
         <tr>
             <th>Picture</th>
             <th>Info</th>
+            <th>Action</th>
         </tr>
 
-        <!-- {{% for book in books %}}
+        <!-- {% for book in books %}
             <tr data-book="{{book.bid}}">
                 <td class="pic">{{book.pic}}</td>
                 <td class="info">
                     <ul>
                         <li><label>Title: </label> {{book.title}}</li>
-                        <li><label>Department: </label>{{book.dept}}</li>
-                        <li><label>Course number: </label>{{book.num}}</li>
-                        <li><label>Professor: </label>{{book.prof}}</li>
                         <li><label>Price: </label>{{book.price}}</li>
-                        <li><label>Condition: </label>{{book.cond}}</li>
                         <li><label>Sold status: </label>
-                        {{% if book.sold == 0 %}}
+                        {% if book.sold == 0 %}
                             <label>Sold</label>
-                        {{% else: %}}
+                        {% else: %}
                             <label>Available</label>
+                        {% endif %}
                         </li>
-                        <li><label>Seller:</label><a href="{{url_for('user',uid={{book.seller}}}}">{{book.sellerName}}</a></li>
                     </ul>
                 </td>
-            </tr> -->
+                <td>
+                    <p><input type="submit" value="Book Information"></p>
+                    <p><input type="submit" value="Seller Information"></p>
+                    <p><input type="submit" value="Add to Cart"></p>
+                </td>
+            </tr> 
+        {% endfor %} -->
         
         <tr data-book="1">
             <td class="pic"></td>
             <td class="info">
                 <ul>
                     <li><label>Title: </label>Introduction to Econometrics</li>
-                    <li><label>Department: </label>Economics</li>
-                        <li><label>Course number: </label>103</li>
-                        <li><label>Professor: </label>Joseph Swingle</li>
-                        <li><label>Price: </label>10</li>
-                        <li><label>Condition: </label>Like New</li>
-                        <li><label>Sold status: </label> Available</li>
-                        <li><label>Seller:</label><a href="{{url_for('user',uid=ypan2}}">Alice Pan</a></li>
+                    <li><label>Price: </label>10</li>
+                    <li><label>Sold status: </label> Available</li>
                 </ul>
+            </td>
+            <td>
+                <p><input type="submit" value="Book Information"></p>
+                <p><input type="submit" value="Seller Information"></p>
+                <p><input type="submit" value="Add to Cart"></p>
             </td>
         </tr>
 
