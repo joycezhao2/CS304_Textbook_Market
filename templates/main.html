@@ -1,8 +1,121 @@
 {% extends "base.html" %}
 
 {% block main_content %}
-<h1>Hello!</h1>
+<h1>Textbook Browser</h1>
 
-<p>For a greeting by name, visit this <a href="{{ url_for('greet') }}">greeting</a> page.</p>
+<div>
+    <form class="search" method="POST" action="/query">
+        <p><lable>Search:<input type="text" name="keyword" id="searchbox"></lable>
+            <input type="submit" value="search" id="submit">
+        </p>
+    </form>
+</div>
+
+<div>
+    <form class="filter" method="POST" action="">
+        <p><label for="dept">Department:</label>
+            <select id="dept" name="Department">
+                <!-- {{% for dept in departments %}}
+                <option value="{{dept}}">{{dept}}</option>
+                {{% endfor %}} -->
+                <option value="CS">Computer Science</option>
+                <option value="ECON">Economics</option>
+                <option value="ARTH">Art History</option>
+                <option value="BIO">Biology</option>
+                <option value="PHIL">Philosophy</option>
+            </select>
+        </p>
+        <p><label for="num">Course Number:</label>
+            <select id="num" name="Course Number">
+                <!-- {{% for num in numbers %}}
+                <option value="{{num}}">{{num}}</option>
+                {{% endfor %}} -->
+                <option value="100">100</option>
+                <option value="101">101</option>
+                <option value="106">106</option>
+                <option value="111">111</option>
+            </select>
+        </p>
+        <p><label for="prof">Professor:</label>
+            <select id="prof" name="Professor">
+                <!-- {{% for prof in professors %}}
+                <option value="{{prof}}">{{prof}}</option>
+                {{% endfor %}} -->
+                <option value="sanderson">Scott Anderson</option>
+                <option value="jwalsh">Julie Walsh</option>
+                <option value="jjoyce">Joseph Joyce</option>
+            </select>
+        </p>
+        <p><lable for="cond">Condition:</lable>
+            <select id="cond" name="Condition">
+                    <option value="new">Brand New</option>
+                    <option value="new-">Like New</option>
+                    <option value="good+">Very Good</option>
+                    <option value="good">Good</option>
+                    <option value="acceptable">Acceptable</option>
+            </select>
+        </p>
+    </form>
+</div>
+
+<div>
+    <form id="crieteria" method="POST" action="">
+        <p><lable for="sort">Sort by:</lable>
+            <select id="sort" name="sorting">
+                <option value="price up">Price low to high</option>
+                <option value="price down">Price high to low</option>
+                <option value="newest">Newest posted</option>
+            </select>
+        </p>
+    </form>
+</div>
+
+<div>
+    <table id="book-list">
+        <tr>
+            <th>Picture</th>
+            <th>Info</th>
+        </tr>
+
+        <!-- {{% for book in books %}}
+            <tr data-book="{{book.bid}}">
+                <td class="pic">{{book.pic}}</td>
+                <td class="info">
+                    <ul>
+                        <li><label>Title: </label> {{book.title}}</li>
+                        <li><label>Department: </label>{{book.dept}}</li>
+                        <li><label>Course number: </label>{{book.num}}</li>
+                        <li><label>Professor: </label>{{book.prof}}</li>
+                        <li><label>Price: </label>{{book.price}}</li>
+                        <li><label>Condition: </label>{{book.cond}}</li>
+                        <li><label>Sold status: </label>
+                        {{% if book.sold == 0 %}}
+                            <label>Sold</label>
+                        {{% else: %}}
+                            <label>Available</label>
+                        </li>
+                        <li><label>Seller:</label><a href="{{url_for('user',uid={{book.seller}}}}">{{book.sellerName}}</a></li>
+                    </ul>
+                </td>
+            </tr> -->
+        
+        <tr data-book="1">
+            <td class="pic"></td>
+            <td class="info">
+                <ul>
+                    <li><label>Title: </label>Introduction to Econometrics</li>
+                    <li><label>Department: </label>Economics</li>
+                        <li><label>Course number: </label>103</li>
+                        <li><label>Professor: </label>Joseph Swingle</li>
+                        <li><label>Price: </label>10</li>
+                        <li><label>Condition: </label>Like New</li>
+                        <li><label>Sold status: </label> Available</li>
+                        <li><label>Seller:</label><a href="{{url_for('user',uid=ypan2}}">Alice Pan</a></li>
+                </ul>
+            </td>
+        </tr>
+
+    </table>
+</div>
 
 {% endblock %}
