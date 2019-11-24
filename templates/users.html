@@ -1,0 +1,40 @@
+<!doctype html>
+<html lang='en'>
+<head>
+    <meta charset='utf-8'>
+    <meta name=author content="Iman Hussain">
+    <title>{{ page_title }}</title>
+    <link rel='stylesheet' href="{{url_for('static', filename = 'style.css')}}">
+    {% block head_stuff %} {% endblock %}
+</head>
+
+{% block content %}
+
+<p><em>Click here to return to the <a href="/">home page.</a></em></p>
+
+<h1>Wendy Wellesley</h1>
+
+<h5>Contact Info:</h5>
+    <p> Phone Number: 123456789 </p>
+    <p> Email: wwellesley@wellesley.edu </p>
+
+    <h5>Selling: </h5>
+    <ul>
+      <li><a href="book.html">Cracking the Coding Interview</a></li>
+    </ul> 
+
+
+<!-- <p>Selling:</p>
+{# loop each book, list each book with SQL commands #}
+<ol>
+    {% for book in books %}
+
+    <li><a href="/id/{{A_books.id}}">{{book.title}}</a></li>
+
+    {% endfor %}
+</ol> -->
+
+
+{% endblock %}
+
+</html>

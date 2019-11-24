@@ -24,6 +24,10 @@ def index():
 def submit():
     return render_template('testform.html')
 
+@app.route('/session/cart', methods=['GET','POST'])
+def session_cart():
+    return render_template('cart.html')
+
 @app.route('/greet/', methods=["GET", "POST"])
 def greet():
     if request.method == 'GET':
@@ -58,6 +62,14 @@ def formecho():
 @app.route('/testform/')
 def testform():
     return render_template('testform.html')
+
+@app.route('/book/<id>')
+def book(id):
+    return render_template('book.html')
+
+@app.route('/users/<username>')
+def user(username):
+    return render_template('users.html')  
 
 
 if __name__ == '__main__':
