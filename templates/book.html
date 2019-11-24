@@ -10,7 +10,7 @@
 <p>Sold Status: Unsold</p>
 <p>Condition: Great</p>
 <!-- <img src="crackingTheCodingInterview.jpg" alt="Cracking the Coding Interview Book Cover"> -->
-<p>Seller: <a href="users.html">Wendy Wellesley</a></p>
+<p>Seller: <a href="{{url_for('user', username=123)}}">Wendy Wellesley</a></p>
 
 <form method="POST" action="/addCart/">
     <input type="hidden" name="bookid" value="123">
