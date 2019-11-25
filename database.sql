@@ -38,7 +38,7 @@ create table S_books (
     id int auto_increment NOT NULL primary key,
     price int,
     sold_status BIT,
-    condition varchar(20),
+    `condition` varchar(20),
     book int,
     seller varchar(20),
     buyer varchar(20),
