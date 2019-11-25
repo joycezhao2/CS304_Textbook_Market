@@ -17,11 +17,10 @@ engine = InnoDB;
 
 /* for all courses differentiated by deparment, section and professor */
 create table courses (
-    CRN char(5),
+    id char(5) auto_increment NOT NULL primary key,
     department varchar(4),
     number char(3),
-    professor varchar(50),
-    primary key (CRN, professor)
+    professor varchar(50)
 )
 engine = InnoDB;
 
@@ -39,9 +38,11 @@ create table S_books (
     price int,
     sold_status BIT,
     `condition` varchar(20),
-    book int,
+    title int,
+    description varchar(500),
     seller varchar(20),
     buyer varchar(20),
+    book int,
     foreign key (book) references A_books(id),
     foreign key (seller) references users(username),
     foreign key (buyer) references users(username)
@@ -50,10 +51,10 @@ engine = InnoDB;
 
 /* associates an A_book with a course */
 create table A_book_course(
-    book int,
-    CRN char(5),
-    foreign key (book) references A_books(id),
-    foreign key (CRN) references courses(CRN),
-    primary key (book, CRN)
+    book_id int,
+    course_id char(5),
+    foreign key (book_id) references A_books(id),
+    foreign key (course_id) references courses(id),
+    primary key (book_id, course_id)
 )
 engine = InnoDB;

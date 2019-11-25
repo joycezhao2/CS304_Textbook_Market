@@ -2,8 +2,6 @@
 
 {% block main_content %}
 
-<p><em>Click here to return to the <a href="/">home page.</a></em></p>
-
 <h1>Wendy Wellesley</h1>
 
 <h5>Contact Info:</h5>
@@ -14,7 +12,7 @@
     <ul>
     {% for book in selling %}
         <li>
-            <a href="{{url_for('book', id=book)}}">Cracking the Coding Interview</a>
+            <a href="{{url_for('book', id=book[0])}}">{{book[1]}}</a>
         </li>
     {% endfor %}
     </ul> 

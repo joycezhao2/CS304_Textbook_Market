@@ -9,8 +9,11 @@
 </head>
 <body>
 
-<a href="{{url_for('submit')}}">Sell a Book</a>
+<a href="{{url_for('index')}}">Search</a>
+<a href="{{url_for('submit')}}">Sell</a>
 <a href="{{url_for('session_cart')}}">Your Cart</a>
+<a href="{{url_for('user', username=123)}}">Your Profile</a>
+
 
 {% with messages = get_flashed_messages() %}
     {% if messages %}

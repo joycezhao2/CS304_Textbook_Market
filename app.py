@@ -5,6 +5,11 @@ from werkzeug import secure_filename
 app = Flask(__name__)
 
 import random
+import lookup
+
+BOOKS = [(123,'Cracking the Coding Interview'),
+            (456, 'Introduction to Econometrics'),
+            (789, 'Multivariable Calculus')]
 
 app.secret_key = 'your secret here'
 # replace that with a random key
@@ -22,9 +27,7 @@ def index():
 
 @app.route('/submit/')
 def submit():
-    print(session.get('cart', {}))
-
-    return render_template('testform.html')
+    return render_template('submit.html')
 
 @app.route('/addCart/', methods=["POST"])
 def addCart():
@@ -41,30 +44,33 @@ def addCart():
 @app.route('/session/cart/', methods=['GET','POST'])
 def session_cart():
     cart = session.get('cart',{}) 
-    if request.method == 'GET':
-        return render_template('cart.html', cart=cart)
-    elif request.method == 'POST':
+
+    if request.method == 'POST':
         # removing from cart
         item = request.form.get('bookid')
         cart.pop(item)
         session['cart'] = cart
-        return render_template('cart.html', cart=cart)
+    return render_template('cart.html', cart=cart)
 
-@app.route('/greet/', methods=["GET", "POST"])
-def greet():
-    if request.method == 'GET':
-        return render_template('greet.html', title='Customized Greeting')
-    else:
-        try:
-            username = request.form['username'] # throws error if there's trouble
-            flash('form submission successful')
-            return render_template('greet.html',
-                                   title='Welcome '+username,
-                                   name=username)
 
-        except Exception as err:
-            flash('form submission error'+str(err))
-            return redirect( url_for('index') )
+
+@app.route('/uploadBook/', methods=['POST'])
+def uploadBook():
+    title = request.form.get('title')
+    dept = request.form.get('department')
+    course_num = request.form.get('number')
+    prof = request.form.get('prof')
+    price = request.form.get('price')
+    condition = request.form.get('condition')
+    comments = request.form.get('description')
+
+    # insert into db
+    lookup.uploadBook(title, dept, course_num, 
+                        prof, condition, price, comments)
+
+    flash('Upload successful')
+
+    return redirect(request.referrer)
 
 @app.route('/formecho/', methods=['GET','POST'])
 def formecho():
@@ -91,8 +97,7 @@ def book(id):
 
 @app.route('/users/<username>/')
 def user(username):
-    selling=[123,234,345,456]
-    return render_template('users.html', selling=selling)  
+    return render_template('users.html', selling=BOOKS)  
 
 @app.route('/bookreq/', methods=["POST"])
 def bookreq():
