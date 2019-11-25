@@ -1,10 +1,11 @@
 use textbooks_db;
 
-drop table if exists users;
-drop table if exists courses;
-drop table if exists A_books;
 drop table if exists S_books;
 drop table if exists A_book_course;
+drop table if exists A_books;
+drop table if exists courses;
+drop table if exists users;
+
 
 /* for all users, either a buyer or a seller */
 create table users (
