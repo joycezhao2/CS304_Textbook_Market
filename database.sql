@@ -17,7 +17,7 @@ engine = InnoDB;
 
 /* for all courses differentiated by deparment, section and professor */
 create table courses (
-    id char(5) auto_increment NOT NULL primary key,
+    id int auto_increment NOT NULL primary key,
     department varchar(4),
     number char(3),
     professor varchar(50)
@@ -52,7 +52,7 @@ engine = InnoDB;
 /* associates an A_book with a course */
 create table A_book_course(
     book_id int,
-    course_id char(5),
+    course_id int,
     foreign key (book_id) references A_books(id),
     foreign key (course_id) references courses(id),
     primary key (book_id, course_id)
