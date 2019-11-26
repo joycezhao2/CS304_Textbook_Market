@@ -7,7 +7,9 @@
 
 {% for book in cart %}
 <div>
-    <h2>{{book['title']}}</h2>
+    <h2>
+        <a href="{{url_for('book', id=book['id'])}}">{{book['title']}}</a>
+    </h2>
     <ul>
         <li>Author to be implemented later</li>
         <li>Course to be implemented later</li>
