@@ -7,10 +7,6 @@ app = Flask(__name__)
 import random
 import lookup
 
-BOOKS = [(123,'Cracking the Coding Interview'),
-            (456, 'Introduction to Econometrics'),
-            (789, 'Multivariable Calculus')]
-
 app.secret_key = 'your secret here'
 # replace that with a random key
 app.secret_key = ''.join([ random.choice(('ABCDEFGHIJKLMNOPQRSTUVXYZ' +
@@ -21,14 +17,41 @@ app.secret_key = ''.join([ random.choice(('ABCDEFGHIJKLMNOPQRSTUVXYZ' +
 # This gets us better error messages for certain common request errors
 app.config['TRAP_BAD_REQUEST_ERRORS'] = True
 
-@app.route('/')
-def index():
-    return render_template('main.html',title='Hello')
+''' Route to handle the main search page. 
+    When there is no search term, show all the movies '''
+@app.route('/',  defaults={'term': ''})
+@app.route('/movies/<term>', methods=["GET"])
+def index(term):
+    books = lookup.searchBook(term)
+    return render_template('main.html',title='Hello', books=books)
 
-@app.route('/submit/')
+''' Route to handle searching for a book'''
+@app.route('/searchBook/', methods=["POST"])
+def searchBook():
+    search_term = request.form.get("keyword")
+    return redirect(url_for('index', term=search_term))
+
+''' Route to handle uploading a book'''
+@app.route('/submit/', methods=['GET', 'POST'])
 def submit():
-    return render_template('submit.html')
+    if request.method == 'POST':
+        title = request.form.get('title')
+        dept = request.form.get('department')
+        course_num = request.form.get('number')
+        prof = request.form.get('prof')
+        price = request.form.get('price')
+        condition = request.form.get('condition')
+        description = request.form.get('description')
 
+        # insert into db
+        lookup.uploadBook(dept, course_num, 
+                            prof, price, condition, title, description)
+
+        flash('Upload successful')
+
+    return render_template('submit.html', title='Upload')
+
+''' Route to handle adding to your cart (session based)'''
 @app.route('/addCart/', methods=["POST"])
 def addCart():
     cart = session.get('cart', {}) 
@@ -38,67 +61,49 @@ def addCart():
     cart[book] = 1
     session['cart'] = cart
     flash('Book added to cart successfully')
-
     return redirect(request.referrer)
 
+''' Route to handle showing your cart and deleting from it'''
 @app.route('/session/cart/', methods=['GET','POST'])
 def session_cart():
     cart = session.get('cart',{}) 
+    
+    if request.method == 'GET':
+        book_info = []
 
-    if request.method == 'POST':
+        for book_id in cart.keys():
+            book = lookup.findBook(book_id)
+            book_info.append(book)
+        return render_template('cart.html', title='Cart', cart=book_info)
+
+    elif request.method == 'POST':
         # removing from cart
         item = request.form.get('bookid')
         cart.pop(item)
         session['cart'] = cart
-    return render_template('cart.html', cart=cart)
+        return redirect(url_for('session_cart'))
 
-
-
-@app.route('/uploadBook/', methods=['POST'])
-def uploadBook():
-    title = request.form.get('title')
-    dept = request.form.get('department')
-    course_num = request.form.get('number')
-    prof = request.form.get('prof')
-    price = request.form.get('price')
-    condition = request.form.get('condition')
-    comments = request.form.get('description')
-
-    # insert into db
-    lookup.uploadBook(title, dept, course_num, 
-                        prof, condition, price, comments)
-
-    flash('Upload successful')
-
-    return redirect(request.referrer)
-
-@app.route('/formecho/', methods=['GET','POST'])
-def formecho():
-    if request.method == 'GET':
-        return render_template('form_data.html',
-                               method=request.method,
-                               form_data=request.args)
-    elif request.method == 'POST':
-        return render_template('form_data.html',
-                               method=request.method,
-                               form_data=request.form)
-    else:
-        return render_template('form_data.html',
-                               method=request.method,
-                               form_data={})
-
-@app.route('/testform/')
-def testform():
-    return render_template('testform.html')
-
+''' Route to display a book '''
 @app.route('/book/<id>/')
 def book(id):
-    return render_template('book.html', id=id)
+    book = lookup.findBook(id)
+    seller = lookup.searchUser(book['seller'])
+    return render_template('book.html', 
+                            title='Book',
+                            book=book, 
+                            seller=seller)
 
+''' Route to display a user '''
 @app.route('/users/<username>/')
 def user(username):
-    return render_template('users.html', selling=BOOKS)  
+    user = lookup.searchUser(username)
+    selling = lookup.findBooksBySeller(username)
+    return render_template('users.html', 
+                            title='User',
+                            user=user, 
+                            selling=selling)  
 
+''' Route to display handle the buttons in the search page '''
 @app.route('/bookreq/', methods=["POST"])
 def bookreq():
     submit = request.form.get("submit")
@@ -107,7 +112,7 @@ def bookreq():
         return redirect(url_for('book',id=bid))
     elif submit == "Seller Information":
         uid = request.form.get("uid")
-        return redirect(url_for('user', username=123))
+        return redirect(url_for('user', username='jzhao2'))
     elif submit == "Add to Cart":
         return redirect(url_for('addCart'),  code=307)
     else:

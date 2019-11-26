@@ -2,16 +2,19 @@
 
 {% block main_content %}
 
-<h1>Cracking the Coding Interview</h1>
-<p>By: Gayle Laakmann McDowell</p>
-<p>Price: $37.20</p>
-<p>Sold Status: Unsold</p>
-<p>Condition: Great</p>
-<!-- <img src="crackingTheCodingInterview.jpg" alt="Cracking the Coding Interview Book Cover"> -->
-<p>Seller: <a href="{{url_for('user', username=123)}}">Wendy Wellesley</a></p>
+<h1>{{book['title']}}</h1>
+<p>By [Default author, to be implemented later]</p>
+<p>Price: ${{book['price']}}</p>
+{% if book['sold_status'] == 0 %}
+    <p>Status: Available</p>
+{% else %}
+    <p>Status: Sold</p>
+{% endif %}
+<p>Condition: {{book['condition']}}</p>
+<p>Seller: <a href="{{url_for('user', username=seller['username'])}}">{{seller['name']}}</a></p>
 
 <form method="POST" action="/addCart/">
-    <input type="hidden" name="bookid" value={{id}}>
+    <input type="hidden" name="bookid" value="{{book['id']}}">
     <input type="submit" name="submit" value="Add to Cart">
 </form>
 

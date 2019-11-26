@@ -3,7 +3,7 @@
 <head>
     <meta charset='utf-8'>
     <meta name=author content="Alice (Yinru) Pan, Joyce Zhao, Iman Hussain">
-    <title>{{ page_title }}</title>
+    <title>{{ title }}</title>
     <link rel='stylesheet' href="{{url_for('static', filename = 'style.css')}}">
     {% block head_stuff %} {% endblock %}
 </head>
@@ -12,7 +12,7 @@
 <a href="{{url_for('index')}}">Search</a>
 <a href="{{url_for('submit')}}">Sell</a>
 <a href="{{url_for('session_cart')}}">Your Cart</a>
-<a href="{{url_for('user', username=123)}}">Your Profile</a>
+<a href="{{url_for('user', username='jzhao2')}}">Your Profile</a>
 
 
 {% with messages = get_flashed_messages() %}

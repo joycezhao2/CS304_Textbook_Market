@@ -2,10 +2,10 @@
 
 {% block main_content %}
 <h1>Textbook Browser</h1>
-
+<p>Welcome to our draft! To try out the search, type terms such as 'Principles' or 'Classics' to see results.</p>
 <div>
-    <form class="search" method="POST" action="/query">
-        <p><lable>Search:<input type="text" name="keyword" id="searchbox"></lable>
+    <form class="search" method="POST" action="{{url_for('searchBook')}}">
+        <p><label>Search:<input type="text" name="keyword" id="searchbox"></label>
             <input type="submit" value="search" id="submit">
         </p>
     </form>
@@ -49,7 +49,7 @@
                 <option value="jjoyce">Joseph Joyce</option>
             </select>
         </p>
-        <p><lable for="cond">Condition:</lable>
+        <p><label for="cond">Condition:</label>
             <select id="cond" name="Condition">
                     <option value="">choose</option>
                     <option value="new">Brand New</option>
@@ -64,7 +64,7 @@
 
 <div>
     <form id="crieteria" method="POST" action="">
-        <p><lable for="sort">Sort by:</lable>
+        <p><label for="sort">Sort by:</label>
             <select id="sort" name="sorting">
                 <option value="">choose</option>
                 <option value="price up">Price low to high</option>
@@ -106,26 +106,27 @@
                 </td>
             </tr> 
         {% endfor %} -->
-        
-        <tr>
-            <td class="pic"></td>
-            <td class="info">
-                <ul>
-                    <li><label>Title: </label>Introduction to Econometrics</li>
-                    <li><label>Price: </label>10</li>
-                    <li><label>Sold status: </label> Available</li>
-                </ul>
-            </td>
-            <td>
-                <form class="book" method="POST" action="/bookreq/">
-                <input type="hidden" name="bookid" value="123">
-                <input type="hidden" name="uid" value="123">
-                <p><input type="submit" name="submit" value="Book Information"></p>
-                <p><input type="submit" name="submit" value="Seller Information"></p>
-                <p><input type="submit" name="submit" value="Add to Cart"></p>
-                </form>
-            </td>
-        </tr>
+        {% for book in books %}
+            <tr>
+                <td class="pic"></td>
+                <td class="info">
+                    <ul>
+                        <li><a href="{{url_for('book', id=book['id'])}}">{{book['title']}}</a></li>
+                        <li><label>Price: $</label>{{book['price']}}</li>
+                        <li><label>Sold status: </label> Available</li>
+                    </ul>
+                </td>
+                <td>
+                    <form class="book" method="POST" action="/bookreq/">
+                    <input type="hidden" name="bookid" value="{{book['id']}}">
+                    <input type="hidden" name="uid" value="123">
+                    <p><input type="submit" name="submit" value="Book Information"></p>
+                    <p><input type="submit" name="submit" value="Seller Information"></p>
+                    <p><input type="submit" name="submit" value="Add to Cart"></p>
+                    </form>
+                </td>
+            </tr>
+        {% endfor %}
     </table>
 </div>
 

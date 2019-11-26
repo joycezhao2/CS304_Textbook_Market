@@ -39,7 +39,7 @@ create table S_books (
     sold_status BIT,
     `condition` varchar(20),
     title int,
-    description varchar(500),
+    comments varchar(500),
     seller varchar(20),
     buyer varchar(20),
     book int,
