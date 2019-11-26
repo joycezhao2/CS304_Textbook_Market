@@ -37,7 +37,7 @@ engine = InnoDB;
 create table S_books (
     id int auto_increment NOT NULL primary key,
     price int,
-    sold_status BIT,
+    sold_status int(1),
     `condition` varchar(20),
     title int,
     comments varchar(500),
