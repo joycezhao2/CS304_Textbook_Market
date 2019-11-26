@@ -20,7 +20,7 @@ app.config['TRAP_BAD_REQUEST_ERRORS'] = True
 ''' Route to handle the main search page. 
     When there is no search term, show all the movies '''
 @app.route('/',  defaults={'term': ''})
-@app.route('/movies/<term>', methods=["GET"])
+@app.route('/search/<term>', methods=["GET"])
 def index(term):
     books = lookup.searchBook(term)
     return render_template('main.html',title='Hello', books=books)
