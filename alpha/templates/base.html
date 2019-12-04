@@ -1,0 +1,33 @@
+<!doctype html>
+<html lang='en'>
+<head>
+    <meta charset='utf-8'>
+    <meta name=author content="Alice (Yinru) Pan, Joyce Zhao, Iman Hussain">
+    <title>{{ title }}</title>
+    <link rel='stylesheet' href="{{url_for('static', filename = 'style.css')}}">
+    {% block head_stuff %} {% endblock %}
+</head>
+<body>
+
+<a href="{{url_for('index')}}">Search</a>
+<a href="{{url_for('submit')}}">Sell</a>
+<a href="{{url_for('session_cart')}}">Your Cart</a>
+<a href="{{url_for('user', username='jzhao2')}}">Your Profile</a>
+
+
+{% with messages = get_flashed_messages() %}
+    {% if messages %}
+        <div id="messages">
+        {% for msg in messages %}
+            <p>{{msg}}</p>
+        {% endfor %}
+        </div>
+    {% endif %}
+{% endwith %}
+            
+{% block main_content %}
+<h1>Welcome!</h1>
+{% endblock %}
+
+</body>
+</html>

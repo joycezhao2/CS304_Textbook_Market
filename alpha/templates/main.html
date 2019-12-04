@@ -1,0 +1,133 @@
+{% extends "base.html" %}
+
+{% block main_content %}
+<h1>Textbook Browser</h1>
+<p>Welcome to our draft! To try out the search, type terms such as 'Principles' or 'Classics' to see results.</p>
+<div>
+    <form class="search" method="POST" action="{{url_for('searchBook')}}">
+        <p><label>Search:<input type="text" name="keyword" id="searchbox"></label>
+            <input type="submit" value="search" id="submit">
+        </p>
+    </form>
+</div>
+
+<div>
+    <form class="filter" method="POST" action="">
+        <p><label for="dept">Department:</label>
+            <select id="dept" name="Department">
+                <!-- {% for dept in departments %}
+                <option value="{{dept}}">{{dept}}</option>
+                {% endfor %} -->
+                <option value="">choose</option>
+                <option value="CS">Computer Science</option>
+                <option value="ECON">Economics</option>
+                <option value="ARTH">Art History</option>
+                <option value="BIO">Biology</option>
+                <option value="PHIL">Philosophy</option>
+            </select>
+        </p>
+        <p><label for="num">Course Number:</label>
+            <select id="num" name="Course Number">
+                <!-- {% for num in numbers %}
+                <option value="{{num}}">{{num}}</option>
+                {% endfor %} -->
+                <option value="">choose</option>
+                <option value="100">100</option>
+                <option value="101">101</option>
+                <option value="106">106</option>
+                <option value="111">111</option>
+            </select>
+        </p>
+        <p><label for="prof">Professor:</label>
+            <select id="prof" name="Professor">
+                <!-- {% for prof in professors %}
+                <option value="{{prof}}">{{prof}}</option>
+                {% endfor %} -->
+                <option value="">choose</option>
+                <option value="sanderson">Scott Anderson</option>
+                <option value="jwalsh">Julie Walsh</option>
+                <option value="jjoyce">Joseph Joyce</option>
+            </select>
+        </p>
+        <p><label for="cond">Condition:</label>
+            <select id="cond" name="Condition">
+                    <option value="">choose</option>
+                    <option value="new">Brand New</option>
+                    <option value="new-">Like New</option>
+                    <option value="good+">Very Good</option>
+                    <option value="good">Good</option>
+                    <option value="acceptable">Acceptable</option>
+            </select>
+        </p>
+    </form>
+</div>
+
+<div>
+    <form id="crieteria" method="POST" action="">
+        <p><label for="sort">Sort by:</label>
+            <select id="sort" name="sorting">
+                <option value="">choose</option>
+                <option value="price up">Price low to high</option>
+                <option value="price down">Price high to low</option>
+                <option value="newest">Newest posted</option>
+            </select>
+        </p>
+    </form>
+</div>
+
+<div>
+    <table id="book-list">
+        <tr>
+            <th>Picture</th>
+            <th>Info</th>
+            <th>Action</th>
+        </tr>
+
+        <!-- {% for book in books %}
+            <tr data-book="{{book.bid}}">
+                <td class="pic">{{book.pic}}</td>
+                <td class="info">
+                    <ul>
+                        <li><label>Title: </label> {{book.title}}</li>
+                        <li><label>Price: </label>{{book.price}}</li>
+                        <li><label>Sold status: </label>
+                        {% if book.sold == 0 %}
+                            <label>Sold</label>
+                        {% else: %}
+                            <label>Available</label>
+                        {% endif %}
+                        </li>
+                    </ul>
+                </td>
+                <td>
+                    <p><input type="submit" name="submit" value="Book Information"></p>
+                    <p><input type="submit" name="submit" value="Seller Information"></p>
+                    <p><input type="submit" name="submit" value="Add to Cart"></p>
+                </td>
+            </tr> 
+        {% endfor %} -->
+        {% for book in books %}
+            <tr>
+                <td class="pic"></td>
+                <td class="info">
+                    <ul>
+                        <li><a href="{{url_for('book', id=book['id'])}}">{{book['title']}}</a></li>
+                        <li><label>Price: $</label>{{book['price']}}</li>
+                        <li><label>Sold status: </label> Available</li>
+                    </ul>
+                </td>
+                <td>
+                    <form class="book" method="POST" action="/bookreq/">
+                    <input type="hidden" name="bookid" value="{{book['id']}}">
+                    <input type="hidden" name="uid" value="123">
+                    <p><input type="submit" name="submit" value="Book Information"></p>
+                    <p><input type="submit" name="submit" value="Seller Information"></p>
+                    <p><input type="submit" name="submit" value="Add to Cart"></p>
+                    </form>
+                </td>
+            </tr>
+        {% endfor %}
+    </table>
+</div>
+
+{% endblock %}

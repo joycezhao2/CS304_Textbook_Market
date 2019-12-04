@@ -1,0 +1,47 @@
+{% extends "base.html" %}
+
+{% block main_content %}
+
+<h1>Textbook Sale Submission</h1>
+
+<p>This page is for uploading information of the textbook you want to sell.</p>
+
+<form method="post" action="{{url_for('submit')}}">
+    <p><label>Book Title:
+        <input required type="text" name="title" size="50"></label></p>
+
+    <p><label>Department:
+        <input required name="department" size="50"></label></p>
+
+    <p><label>Course number:
+        <input required name="number" size="20"></label></p> 
+        
+    <p><label>Professor (First & Last Name):
+        <input required name="prof" size="50"></label></p>
+    
+    <p><label>Condition:
+        <select required name="condition">
+            <option value="">choose</option>
+            <option value="new">Brand New</option>
+            <option value="new-">Like New</option>
+            <option value="good+">Very Good</option>
+            <option value="good">Good</option>
+            <option value="acceptable">Acceptable</option>
+        </select>
+    </label></p>
+
+    <p><label>Price (USD):
+        <input required name="price" size="20"></label></p> 
+
+    <p><label>Description: 
+        <textarea name="description" rows=4 cols=50></textarea>
+    </label></p>
+
+    <!-- Plan to support file upload in Alpha version -->
+    <!-- <p><label>Picture (JPEG or PNG):
+        <input type="file" name="pic" accept="image/png, image/jpeg">
+    </label></p> -->
+
+    <p><input type="submit" value="Submit">
+</form>
+{% endblock %}

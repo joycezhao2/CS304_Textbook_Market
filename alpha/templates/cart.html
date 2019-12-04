@@ -1,0 +1,27 @@
+{% extends "base.html" %}
+
+{% block main_content %}
+
+<h1>Your Cart</h1>
+<p>Take a look at the books you're interested in!</p>
+
+{% for book in cart %}
+<div>
+    <h2>
+        <a href="{{url_for('book', id=book['id'])}}">{{book['title']}}</a>
+    </h2>
+    <ul>
+        <li>Author to be implemented later</li>
+        <li>Course to be implemented later</li>
+        <li>Price: ${{book['price']}} </li>
+    </ul>
+    <form method="post" action="">
+        <input type="hidden" name="bookid" value="{{book['id']}}">
+        <input type="submit" name="submit" value="Remove from Cart">
+    </form>
+</div>
+
+
+{% endfor %}
+
+{% endblock %}

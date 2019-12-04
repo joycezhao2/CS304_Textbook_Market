@@ -1,0 +1,621 @@
+====================== app.py =====================
+from flask import (Flask, render_template, make_response, url_for, request,
+                   redirect, flash, session, send_from_directory, jsonify
+                   )
+from werkzeug import secure_filename
+app = Flask(__name__)
+
+import random
+import lookup
+
+app.secret_key = 'your secret here'
+# replace that with a random key
+app.secret_key = ''.join([ random.choice(('ABCDEFGHIJKLMNOPQRSTUVXYZ' +
+                                          'abcdefghijklmnopqrstuvxyz' +
+                                          '0123456789'))
+                           for i in range(20) ])
+
+# This gets us better error messages for certain common request errors
+app.config['TRAP_BAD_REQUEST_ERRORS'] = True
+
+''' Route to handle the main search page. 
+    When there is no search term, show all the movies '''
+@app.route('/',  defaults={'term': ''})
+@app.route('/search/<term>', methods=["GET"])
+def index(term):
+    books = lookup.searchBook(term)
+    return render_template('main.html',title='Hello', books=books)
+
+''' Route to handle searching for a book'''
+@app.route('/searchBook/', methods=["POST"])
+def searchBook():
+    search_term = request.form.get("keyword")
+    return redirect(url_for('index', term=search_term))
+
+''' Route to handle uploading a book'''
+@app.route('/submit/', methods=['GET', 'POST'])
+def submit():
+    if request.method == 'POST':
+        title = request.form.get('title')
+        dept = request.form.get('department')
+        course_num = request.form.get('number')
+        prof = request.form.get('prof')
+        price = request.form.get('price')
+        condition = request.form.get('condition')
+        description = request.form.get('description')
+
+        # insert into db
+        lookup.uploadBook(dept, course_num, 
+                            prof, price, condition, title, description)
+
+        flash('Upload successful')
+
+    return render_template('submit.html', title='Upload')
+
+''' Route to handle adding to your cart (session based)'''
+@app.route('/addCart/', methods=["POST"])
+def addCart():
+    cart = session.get('cart', {}) 
+    book = request.form.get('bookid')
+
+    # use dict to prevent repitition of same book
+    cart[book] = 1
+    session['cart'] = cart
+    flash('Book added to cart successfully')
+    return redirect(request.referrer)
+
+''' Route to handle showing your cart and deleting from it'''
+@app.route('/session/cart/', methods=['GET','POST'])
+def session_cart():
+    cart = session.get('cart',{}) 
+    
+    if request.method == 'GET':
+        book_info = []
+
+        for book_id in cart.keys():
+            book = lookup.findBook(book_id)
+            book_info.append(book)
+        return render_template('cart.html', title='Cart', cart=book_info)
+
+    elif request.method == 'POST':
+        # removing from cart
+        item = request.form.get('bookid')
+        cart.pop(item)
+        session['cart'] = cart
+        return redirect(url_for('session_cart'))
+
+''' Route to display a book '''
+@app.route('/book/<id>/')
+def book(id):
+    book = lookup.findBook(id)
+    seller = lookup.searchUser(book['seller'])
+    return render_template('book.html', 
+                            title='Book',
+                            book=book, 
+                            seller=seller)
+
+''' Route to display a user '''
+@app.route('/users/<username>/')
+def user(username):
+    user = lookup.searchUser(username)
+    selling = lookup.findBooksBySeller(username)
+    return render_template('users.html', 
+                            title='User',
+                            user=user, 
+                            selling=selling)  
+
+''' Route to display handle the buttons in the search page '''
+@app.route('/bookreq/', methods=["POST"])
+def bookreq():
+    submit = request.form.get("submit")
+    if submit == "Book Information":
+        bid = request.form.get("bookid")
+        return redirect(url_for('book',id=bid))
+    elif submit == "Seller Information":
+        uid = request.form.get("uid")
+        return redirect(url_for('user', username='jzhao2'))
+    elif submit == "Add to Cart":
+        return redirect(url_for('addCart'),  code=307)
+    else:
+        return redirect("/")
+
+if __name__ == '__main__':
+    import sys, os
+    if len(sys.argv) > 1:
+        # arg, if any, is the desired port number
+        port = int(sys.argv[1])
+        assert(port>1024)
+    else:
+        port = os.getuid()
+    app.debug = True
+    app.run('0.0.0.0',port)
+
+====================== lookup.py =====================
+import dbi
+
+'''Returns a database connection for that db'''
+def getConn(db):
+    # dsn = dbi. read_cnf("~/.textbook.cnf")
+    dsn = dbi.read_cnf()
+    conn = dbi.connect(dsn)
+    dbi.select_db(conn,db)
+    return conn
+
+# Makes the database connection available globally
+CONN = getConn('textbooks_db')
+
+def searchBook(search_term):
+    curs = dbi.dictCursor(CONN)
+
+    curs.execute('''select * from S_books where title like %s''',
+            ['%'+search_term+'%'])
+
+    return curs.fetchall()
+
+def uploadBook(dept, course_num, prof, price, condition, title, description):
+    curs = dbi.cursor(CONN)
+
+    # finds the course the book is for
+    curs.execute('''select id from courses 
+                    where department = %s
+                    and number = %s
+                    and professor = %s''',
+                    [dept, course_num, prof])
+    course_id = curs.fetchone()
+
+    # finds the A_book the book is for
+    if course_id: 
+        curs.execute('''select book_id from A_book_course where
+                    course_id = %s''',
+                    [course_id[0]])
+        book_id = curs.fetchone()
+    else: 
+        book_id = 1
+
+    # insert the S_book into the database
+    curs.execute('''insert into S_books(price, 
+                                        sold_status,
+                                        `condition`, 
+                                        title, 
+                                        description,
+                                        seller,
+                                        buyer, 
+                                        book
+                                        )
+                    values (%s,%s,%s,%s,%s,%s,%s,%s)''',
+                    [price, 0, condition, title, description, 'jzhao2', None, book_id])
+
+def findBook(book_id):
+    curs = dbi.dictCursor(CONN)
+
+    curs.execute('''select * from S_books where id=%s''',
+            [book_id])
+
+    return curs.fetchone()
+
+def searchUser(username):
+    curs = dbi.dictCursor(CONN)
+
+    curs.execute('''select * from users where username=%s''',
+            [username])
+
+    return curs.fetchone()
+
+def findBooksBySeller(username):
+    curs = dbi.dictCursor(CONN)
+
+    curs.execute('''select * from S_books where seller=%s''',
+            [username])
+
+    return curs.fetchall()
+====================== database.sql =====================
+use textbooks_db;
+
+drop table if exists S_books;
+drop table if exists A_book_course;
+drop table if exists A_books;
+drop table if exists courses;
+drop table if exists users;
+
+
+/* for all users, either a buyer or a seller */
+create table users (
+    username varchar(20) NOT NULL primary key,
+    name varchar(50),
+    email varchar(100),
+    phnum varchar(10)
+)
+engine = InnoDB;
+
+/* for all courses differentiated by deparment, section and professor */
+create table courses (
+    id int auto_increment NOT NULL primary key,
+    department varchar(4),
+    number char(3),
+    professor varchar(50)
+)
+engine = InnoDB;
+
+/* for the abstract book, each is associated with one course */
+create table A_books (
+    id int auto_increment primary key,
+    title varchar(50),
+    author varchar(30)
+)
+engine = InnoDB;
+
+/* for each book uploaded by the seller */
+create table S_books (
+    id int auto_increment NOT NULL primary key,
+    price int,
+    sold_status int(1),
+    `condition` varchar(20),
+    title int,
+    comments varchar(500),
+    seller varchar(20),
+    buyer varchar(20),
+    book int,
+    foreign key (book) references A_books(id),
+    foreign key (seller) references users(username),
+    foreign key (buyer) references users(username)
+)
+engine = InnoDB;
+
+/* associates an A_book with a course */
+create table A_book_course(
+    book_id int,
+    course_id int,
+    foreign key (book_id) references A_books(id),
+    foreign key (course_id) references courses(id),
+    primary key (book_id, course_id)
+)
+engine = InnoDB;
+====================== templates/base.html =====================
+<!doctype html>
+<html lang='en'>
+<head>
+    <meta charset='utf-8'>
+    <meta name=author content="Alice (Yinru) Pan, Joyce Zhao, Iman Hussain">
+    <title>{{ title }}</title>
+    <link rel='stylesheet' href="{{url_for('static', filename = 'style.css')}}">
+    {% block head_stuff %} {% endblock %}
+</head>
+<body>
+
+<a href="{{url_for('index')}}">Search</a>
+<a href="{{url_for('submit')}}">Sell</a>
+<a href="{{url_for('session_cart')}}">Your Cart</a>
+<a href="{{url_for('user', username='jzhao2')}}">Your Profile</a>
+
+
+{% with messages = get_flashed_messages() %}
+    {% if messages %}
+        <div id="messages">
+        {% for msg in messages %}
+            <p>{{msg}}</p>
+        {% endfor %}
+        </div>
+    {% endif %}
+{% endwith %}
+            
+{% block main_content %}
+<h1>Welcome!</h1>
+{% endblock %}
+
+</body>
+</html>
+
+====================== templates/book.html =====================
+{% extends "base.html" %}
+
+{% block main_content %}
+
+<h1>{{book['title']}}</h1>
+<p>By [Default author, to be implemented later]</p>
+<p>Price: ${{book['price']}}</p>
+{% if book['sold_status'] == 0 %}
+    <p>Status: Available</p>
+{% else %}
+    <p>Status: Sold</p>
+{% endif %}
+<p>Condition: {{book['condition']}}</p>
+<p>Seller: <a href="{{url_for('user', username=seller['username'])}}">{{seller['name']}}</a></p>
+
+<form method="POST" action="/addCart/">
+    <input type="hidden" name="bookid" value="{{book['id']}}">
+    <input type="submit" name="submit" value="Add to Cart">
+</form>
+
+{% endblock %}
+
+</html>
+====================== templates/cart.html =====================
+{% extends "base.html" %}
+
+{% block main_content %}
+
+<h1>Your Cart</h1>
+<p>Take a look at the books you're interested in!</p>
+
+{% for book in cart %}
+<div>
+    <h2>
+        <a href="{{url_for('book', id=book['id'])}}">{{book['title']}}</a>
+    </h2>
+    <ul>
+        <li>Author to be implemented later</li>
+        <li>Course to be implemented later</li>
+        <li>Price: ${{book['price']}} </li>
+    </ul>
+    <form method="post" action="">
+        <input type="hidden" name="bookid" value="{{book['id']}}">
+        <input type="submit" name="submit" value="Remove from Cart">
+    </form>
+</div>
+
+
+{% endfor %}
+
+{% endblock %}
+
+====================== templates/form_data.html =====================
+{% extends "base.html" %}
+
+{% block main_content %}
+
+<h1>Form Data</h1>
+
+<p>The form was submitted by {{method}}.</p>
+
+<ul>
+    {% for key in form_data.keys() %}
+    <li><b class="key">{{key}}</b>
+        <ul>
+            {# getlist is a special method on Flask multi-dicts #}
+            {# it gets the list of all values for that key #}
+            {% for val in form_data.getlist(key) %}
+            <li>{{val}}</li>
+            {% endfor %}
+        </ul></li>
+    {% endfor %}
+</ul>
+
+{% endblock %}
+
+====================== templates/greet.html =====================
+{% extends "base.html" %}
+
+{% block main_content %}
+<p>Click to <a href="{{ url_for('index') }}">return to the main page</a>.</p>
+
+<h1>Greetings {{name}}</h1>
+
+<form method="post" action="">
+    <p>Please tell us your <label for="username">name: <input type="text" name="username"></label></p>
+    <p><input type="submit"></p>
+</form>
+
+{% endblock %}
+
+====================== templates/main.html =====================
+{% extends "base.html" %}
+
+{% block main_content %}
+<h1>Textbook Browser</h1>
+<p>Welcome to our draft! To try out the search, type terms such as 'Principles' or 'Classics' to see results.</p>
+<div>
+    <form class="search" method="POST" action="{{url_for('searchBook')}}">
+        <p><label>Search:<input type="text" name="keyword" id="searchbox"></label>
+            <input type="submit" value="search" id="submit">
+        </p>
+    </form>
+</div>
+
+<div>
+    <form class="filter" method="POST" action="">
+        <p><label for="dept">Department:</label>
+            <select id="dept" name="Department">
+                <!-- {% for dept in departments %}
+                <option value="{{dept}}">{{dept}}</option>
+                {% endfor %} -->
+                <option value="">choose</option>
+                <option value="CS">Computer Science</option>
+                <option value="ECON">Economics</option>
+                <option value="ARTH">Art History</option>
+                <option value="BIO">Biology</option>
+                <option value="PHIL">Philosophy</option>
+            </select>
+        </p>
+        <p><label for="num">Course Number:</label>
+            <select id="num" name="Course Number">
+                <!-- {% for num in numbers %}
+                <option value="{{num}}">{{num}}</option>
+                {% endfor %} -->
+                <option value="">choose</option>
+                <option value="100">100</option>
+                <option value="101">101</option>
+                <option value="106">106</option>
+                <option value="111">111</option>
+            </select>
+        </p>
+        <p><label for="prof">Professor:</label>
+            <select id="prof" name="Professor">
+                <!-- {% for prof in professors %}
+                <option value="{{prof}}">{{prof}}</option>
+                {% endfor %} -->
+                <option value="">choose</option>
+                <option value="sanderson">Scott Anderson</option>
+                <option value="jwalsh">Julie Walsh</option>
+                <option value="jjoyce">Joseph Joyce</option>
+            </select>
+        </p>
+        <p><label for="cond">Condition:</label>
+            <select id="cond" name="Condition">
+                    <option value="">choose</option>
+                    <option value="new">Brand New</option>
+                    <option value="new-">Like New</option>
+                    <option value="good+">Very Good</option>
+                    <option value="good">Good</option>
+                    <option value="acceptable">Acceptable</option>
+            </select>
+        </p>
+    </form>
+</div>
+
+<div>
+    <form id="crieteria" method="POST" action="">
+        <p><label for="sort">Sort by:</label>
+            <select id="sort" name="sorting">
+                <option value="">choose</option>
+                <option value="price up">Price low to high</option>
+                <option value="price down">Price high to low</option>
+                <option value="newest">Newest posted</option>
+            </select>
+        </p>
+    </form>
+</div>
+
+<div>
+    <table id="book-list">
+        <tr>
+            <th>Picture</th>
+            <th>Info</th>
+            <th>Action</th>
+        </tr>
+
+        <!-- {% for book in books %}
+            <tr data-book="{{book.bid}}">
+                <td class="pic">{{book.pic}}</td>
+                <td class="info">
+                    <ul>
+                        <li><label>Title: </label> {{book.title}}</li>
+                        <li><label>Price: </label>{{book.price}}</li>
+                        <li><label>Sold status: </label>
+                        {% if book.sold == 0 %}
+                            <label>Sold</label>
+                        {% else: %}
+                            <label>Available</label>
+                        {% endif %}
+                        </li>
+                    </ul>
+                </td>
+                <td>
+                    <p><input type="submit" name="submit" value="Book Information"></p>
+                    <p><input type="submit" name="submit" value="Seller Information"></p>
+                    <p><input type="submit" name="submit" value="Add to Cart"></p>
+                </td>
+            </tr> 
+        {% endfor %} -->
+        {% for book in books %}
+            <tr>
+                <td class="pic"></td>
+                <td class="info">
+                    <ul>
+                        <li><a href="{{url_for('book', id=book['id'])}}">{{book['title']}}</a></li>
+                        <li><label>Price: $</label>{{book['price']}}</li>
+                        <li><label>Sold status: </label> Available</li>
+                    </ul>
+                </td>
+                <td>
+                    <form class="book" method="POST" action="/bookreq/">
+                    <input type="hidden" name="bookid" value="{{book['id']}}">
+                    <input type="hidden" name="uid" value="123">
+                    <p><input type="submit" name="submit" value="Book Information"></p>
+                    <p><input type="submit" name="submit" value="Seller Information"></p>
+                    <p><input type="submit" name="submit" value="Add to Cart"></p>
+                    </form>
+                </td>
+            </tr>
+        {% endfor %}
+    </table>
+</div>
+
+{% endblock %}
+
+====================== templates/submit.html =====================
+{% extends "base.html" %}
+
+{% block main_content %}
+
+<h1>Textbook Sale Submission</h1>
+
+<p>This page is for uploading information of the textbook you want to sell.</p>
+
+<form method="post" action="{{url_for('submit')}}">
+    <p><label>Book Title:
+        <input required type="text" name="title" size="50"></label></p>
+
+    <p><label>Department:
+        <input required name="department" size="50"></label></p>
+
+    <p><label>Course number:
+        <input required name="number" size="20"></label></p> 
+        
+    <p><label>Professor (First & Last Name):
+        <input required name="prof" size="50"></label></p>
+    
+    <p><label>Condition:
+        <select required name="condition">
+            <option value="">choose</option>
+            <option value="new">Brand New</option>
+            <option value="new-">Like New</option>
+            <option value="good+">Very Good</option>
+            <option value="good">Good</option>
+            <option value="acceptable">Acceptable</option>
+        </select>
+    </label></p>
+
+    <p><label>Price (USD):
+        <input required name="price" size="20"></label></p> 
+
+    <p><label>Description: 
+        <textarea name="description" rows=4 cols=50></textarea>
+    </label></p>
+
+    <!-- Plan to support file upload in Alpha version -->
+    <!-- <p><label>Picture (JPEG or PNG):
+        <input type="file" name="pic" accept="image/png, image/jpeg">
+    </label></p> -->
+
+    <p><input type="submit" value="Submit">
+</form>
+{% endblock %}
+
+====================== templates/users.html =====================
+{% extends "base.html" %}
+
+{% block main_content %}
+
+<h1>{{user['name']}}</h1>
+
+<h3>Contact Info</h3>
+    <p> Phone Number: {{user['phnum']}} </p>
+    <p> Email: {{user['email']}} </p>
+
+    <h4>Selling: </h4>
+    <ul>
+    {% for book in selling %}
+        <li>
+            <a href="{{url_for('book', id=book['id'])}}">{{book['title']}}</a>
+        </li>
+    {% endfor %}
+    </ul> 
+
+{% endblock %}
+
+</html>
+====================== static/*.js =====================
+
+====================== static/style.css =====================
+/* For flashed messages; make them stand out using red and italics */
+
+#messages {
+    color: red;
+    font-style: italic;
+}
+
+h1 {
+    font-size: 200%;
+    color: teal;
+}
+
