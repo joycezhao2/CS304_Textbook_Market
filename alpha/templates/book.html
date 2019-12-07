@@ -20,12 +20,10 @@
     <input type="submit" name="submit" value="Add to Cart">
 </form>
 
-<h5>Contact Seller</h5>
+<h4>Contact Seller</h4>
 <form method="POST" action="/send_mail/">
 <table>
     <p> Recipient: {{seller['email']}} </p>
-    <tr><td><label for="sender">Sender:</td>
-        <td><input type="text" id="sender" name="sender" size="30"></td></tr>
     <tr><td><label for="subject">Subject:</td>
         <td><input type="text" id="subject" name="subject" size="50"></td></tr>
     <tr><td colspan="2"><label for="body">Email:</td></tr>

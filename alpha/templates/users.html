@@ -19,6 +19,19 @@
     {% endfor %}
     </ul> 
 
+    <h4>Contact Me</h4>
+    <form method="POST" action="/send_mail/">
+    <table>
+        <p> Recipient: {{user['email']}} </p>
+        <tr><td><label for="subject">Subject:</td>
+            <td><input type="text" id="subject" name="subject" size="50"></td></tr>
+        <tr><td colspan="2"><label for="body">Email:</td></tr>
+        <tr><td colspan="2"><textarea rows=10 cols=60 id="body" name="body"></textarea></td></tr>
+    </table>
+        <input type="hidden" name="userEmail" value="{{user['email']}}">
+        <input type="submit" name="submit" value="Send Email">
+    </form>
+
 {% endblock %}
 
 </html>

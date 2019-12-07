@@ -189,7 +189,7 @@ def send_mail():
     else:
         try:
              # throw error if there's trouble
-            sender = request.form['sender']
+            sender = session['CAS_USERNAME'] + "@wellesley.edu"
             recipient = request.form.get("userEmail")
             subject = request.form['subject']
             body = request.form['body']
