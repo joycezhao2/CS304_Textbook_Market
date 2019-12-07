@@ -115,7 +115,7 @@
                 <td>
                     <form class="book" method="POST" action="/bookreq/">
                     <input type="hidden" name="bookid" value="{{book['id']}}">
-                    <input type="hidden" name="uid" value="123">
+                    <input type="hidden" name="uid" value="{{book['seller']}}">
                     <p><input type="submit" name="submit" value="Book Information"></p>
                     <p><input type="submit" name="submit" value="Seller Information"></p>
                     <p><input type="submit" name="submit" value="Add to Cart"></p>

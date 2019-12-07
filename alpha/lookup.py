@@ -8,9 +8,6 @@ def getConn(db):
     dbi.select_db(conn,db)
     return conn
 
-# Makes the database connection available globally
-# CONN = getConn('textbooks_db')
-
 def searchBook(search_term):
     CONN = getConn('textbooks_db')
     curs = dbi.dictCursor(CONN)
@@ -33,7 +30,7 @@ def filterBook(dept, course_num):
                     [dept, course_num])
     return curs.fetchall()
 
-def uploadBook(dept, course_num, prof, price, condition, title, description):
+def uploadBook(dept, course_num, prof, price, condition, title, description, seller):
     CONN = getConn('textbooks_db')
     curs = dbi.cursor(CONN)
 
@@ -65,7 +62,7 @@ def uploadBook(dept, course_num, prof, price, condition, title, description):
                                         book
                                         )
                     values (%s,%s,%s,%s,%s,%s,%s,%s)''',
-                    [price, 0, condition, title, description, 'jzhao2', None, book_id])
+                    [price, 0, condition, title, description, seller, None, book_id])
 
 def findBook(book_id):
     CONN = getConn('textbooks_db')
@@ -73,6 +70,23 @@ def findBook(book_id):
 
     curs.execute('''select * from S_books where id=%s''',
             [book_id])
+
+    return curs.fetchone()
+
+def createUser(name, username):
+    CONN = getConn('textbooks_db')
+    curs = dbi.dictCursor(CONN)
+
+    curs.execute('''insert into users(username, name, email, phnum)
+                    values(%s, %s, %s, %s)''',
+                    [username, name, username+'@wellesley.edu', None])
+
+def searchUser(username):
+    CONN = getConn('textbooks_db')
+    curs = dbi.dictCursor(CONN)
+
+    curs.execute('''select * from users where username=%s''',
+            [username])
 
     return curs.fetchone()
 

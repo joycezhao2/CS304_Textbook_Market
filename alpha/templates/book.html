@@ -11,27 +11,31 @@
     <p>Status: Sold</p>
 {% endif %}
 <p>Condition: {{book['condition']}}</p>
-<p>Seller: <a href="{{url_for('user', username=seller['username'])}}">{{seller['name']}}</a></p>
+<p>Seller: <a href="{{url_for('user', username=seller)}}">{{seller}}</a></p>
 
-<input type="checkbox" name="markAsSold" value="soldStatus"> Mark as Sold <br>
+{% if username == seller %}    
+    <input type="checkbox" name="markAsSold" value="soldStatus"> Mark as Sold <br>
+{% endif %}    
 
 <form method="POST" action="/addCart/">
     <input type="hidden" name="bookid" value="{{book['id']}}">
     <input type="submit" name="submit" value="Add to Cart">
 </form>
 
-<h4>Contact Seller</h4>
-<form method="POST" action="/send_mail/">
-<table>
-    <p> Recipient: {{seller['email']}} </p>
-    <tr><td><label for="subject">Subject:</td>
-        <td><input type="text" id="subject" name="subject" size="50"></td></tr>
-    <tr><td colspan="2"><label for="body">Email:</td></tr>
-    <tr><td colspan="2"><textarea rows=10 cols=60 id="body" name="body"></textarea></td></tr>
-</table>
-    <input type="hidden" name="userEmail" value="{{seller['email']}}">
-    <input type="submit" name="submit" value="Send Email">
-</form>
+{% if seller != username %}
+    <h4>Contact Seller</h4>
+    <form method="POST" action="/send_mail/">
+    <table>
+        <p> Recipient: {{seller['email']}} </p>
+        <tr><td><label for="subject">Subject:</td>
+            <td><input type="text" id="subject" name="subject" size="50"></td></tr>
+        <tr><td colspan="2"><label for="body">Email:</td></tr>
+        <tr><td colspan="2"><textarea rows=10 cols=60 id="body" name="body"></textarea></td></tr>
+    </table>
+        <input type="hidden" name="userEmail" value="{{seller['email']}}">
+        <input type="submit" name="submit" value="Send Email">
+    </form>
+{% endif %}
 
 {% endblock %}
 

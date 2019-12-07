@@ -9,24 +9,28 @@
     {% for book in selling %}
         <li>
             <a href="{{url_for('book', id=book['id'])}}">{{book['title']}}</a>
-            <span><input type="checkbox" name="markAsSold" value="soldStatus"> Sold <br>
+            {% if loggedInUser == username %}    
+                <span><input type="checkbox" name="markAsSold" value="soldStatus"> Mark as Sold <br>
+            {% endif %}            
             </span>
         </li>
     {% endfor %}
     </ul> 
 
+{% if loggedInUser != username %}    
     <h4>Contact Me</h4>
     <form method="POST" action="/send_mail/">
     <table>
-        <p> Recipient: {{email}} </p>
+        <p> Recipient: {{username+'@wellesley.edu'}} </p>
         <tr><td><label for="subject">Subject:</td>
             <td><input type="text" id="subject" name="subject" size="50"></td></tr>
         <tr><td colspan="2"><label for="body">Email:</td></tr>
         <tr><td colspan="2"><textarea rows=10 cols=60 id="body" name="body"></textarea></td></tr>
     </table>
-        <input type="hidden" name="userEmail" value="{{email}}">
+        <input type="hidden" name="userEmail" value="{{username+'@wellesley.edu'}}">
         <input type="submit" name="submit" value="Send Email">
     </form>
+{% endif %}
 
 {% endblock %}
 

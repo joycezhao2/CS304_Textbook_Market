@@ -1,0 +1,16 @@
+{% extends "base.html" %}
+
+{% block main_content %}
+
+<h1>Textbook Market</h1>
+<p>Welcome to Textbook Market! It looks like it's your first time here. 
+    Enter your name to get started.
+</p>
+
+<form method="post" action="{{url_for('verify')}}">
+    <p><label>Name:
+        <input required type="text" name="name" size="50"></label></p>
+    <p><input type="submit" value="Submit">
+</form>
+
+{% endblock %}
