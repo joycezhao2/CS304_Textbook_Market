@@ -181,6 +181,7 @@ def book(id):
                             title='Book',
                             book=book, 
                             seller=book['seller'],
+                            email=book['seller']+'@wellesley.edu',
                             username=username)
 
 ''' Route to display a user '''
