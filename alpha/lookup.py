@@ -9,9 +9,10 @@ def getConn(db):
     return conn
 
 # Makes the database connection available globally
-CONN = getConn('textbooks_db')
+# CONN = getConn('textbooks_db')
 
 def searchBook(search_term):
+    CONN = getConn('textbooks_db')
     curs = dbi.dictCursor(CONN)
 
     curs.execute('''select * from S_books where title like %s''',
@@ -19,7 +20,24 @@ def searchBook(search_term):
 
     return curs.fetchall()
 
+def filterBook(dept, course_num, prof, cond):
+    CONN = getConn('textbooks_db')
+    curs = dbi.cursor(CONN)
+
+    # finds the S_books with the criterias
+    # needs to handle empty cases (or not?)
+    curs.execute('''select * from S_books
+                    where book in
+                    (select id from A_books
+                    where department = %s
+                    and number = %s
+                    and professor = %s)
+                    and cond = %s''',
+                    [dept, course_num, prof, cond])
+    return curs.fetchall()
+
 def uploadBook(dept, course_num, prof, price, condition, title, description):
+    CONN = getConn('textbooks_db')
     curs = dbi.cursor(CONN)
 
     # finds the course the book is for
@@ -53,6 +71,7 @@ def uploadBook(dept, course_num, prof, price, condition, title, description):
                     [price, 0, condition, title, description, 'jzhao2', None, book_id])
 
 def findBook(book_id):
+    CONN = getConn('textbooks_db')
     curs = dbi.dictCursor(CONN)
 
     curs.execute('''select * from S_books where id=%s''',
@@ -61,6 +80,7 @@ def findBook(book_id):
     return curs.fetchone()
 
 def searchUser(username):
+    CONN = getConn('textbooks_db')
     curs = dbi.dictCursor(CONN)
 
     curs.execute('''select * from users where username=%s''',
@@ -69,6 +89,7 @@ def searchUser(username):
     return curs.fetchone()
 
 def findBooksBySeller(username):
+    CONN = getConn('textbooks_db')
     curs = dbi.dictCursor(CONN)
 
     curs.execute('''select * from S_books where seller=%s''',
