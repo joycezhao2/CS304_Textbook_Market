@@ -13,9 +13,26 @@
 <p>Condition: {{book['condition']}}</p>
 <p>Seller: <a href="{{url_for('user', username=seller['username'])}}">{{seller['name']}}</a></p>
 
+<input type="checkbox" name="markAsSold" value="soldStatus"> Mark as Sold <br>
+
 <form method="POST" action="/addCart/">
     <input type="hidden" name="bookid" value="{{book['id']}}">
     <input type="submit" name="submit" value="Add to Cart">
+</form>
+
+<h5>Contact Seller</h5>
+<form method="POST" action="/send_mail/">
+<table>
+    <p> Recipient: {{seller['email']}} </p>
+    <tr><td><label for="sender">Sender:</td>
+        <td><input type="text" id="sender" name="sender" size="30"></td></tr>
+    <tr><td><label for="subject">Subject:</td>
+        <td><input type="text" id="subject" name="subject" size="50"></td></tr>
+    <tr><td colspan="2"><label for="body">Email:</td></tr>
+    <tr><td colspan="2"><textarea rows=10 cols=60 id="body" name="body"></textarea></td></tr>
+</table>
+    <input type="hidden" name="userEmail" value="{{seller['email']}}">
+    <input type="submit" name="submit" value="Send Email">
 </form>
 
 {% endblock %}

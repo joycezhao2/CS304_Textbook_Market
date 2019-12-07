@@ -8,6 +8,19 @@ import random
 import lookup
 from flask_cas import CAS
 
+#flask-mail imports
+from flask_mail import Mail, Message
+app.config.update(
+    DEBUG=True,
+    # EMAIL SETTINGS
+    MAIL_SERVER='localhost',    # default; works on Tempest
+    MAIL_PORT=25,               # default
+    MAIL_USE_SSL=False,         # default
+    MAIL_USERNAME='textbookmarket@wellesley.edu'
+)
+mail = Mail(app)
+# end of mail stuff;
+
 app.secret_key = 'your secret here'
 # replace that with a random key
 app.secret_key = ''.join([ random.choice(('ABCDEFGHIJKLMNOPQRSTUVXYZ' +
@@ -170,6 +183,32 @@ def user(username):
                             user=user, 
                             selling=selling,
                             username=loggedIn)  
+
+@app.route('/send_mail/', methods=["GET", "POST"])
+def send_mail():
+    if request.method == 'GET':
+        return redirect(request.referrer)
+    else:
+        try:
+             # throw error if there's trouble
+            sender = request.form['sender']
+            recipient = request.form.get("userEmail")
+            subject = request.form['subject']
+            body = request.form['body']
+            # print(['form',sender,recipient,subject,body])
+            msg = Message(subject=subject,
+                          sender=sender,
+                          recipients=[recipient],
+                          body=body)
+            # print(['msg',msg])
+            mail.send(msg)
+            flash('email sent successfully')
+            return redirect(request.referrer)
+
+        except Exception as err:
+            print(['err',err])
+            flash('form submission error'+str(err))
+            return redirect(request.referrer)
 
 ''' Route to display handle the buttons in the search page '''
 @app.route('/bookreq/', methods=["POST"])
