@@ -20,20 +20,17 @@ def searchBook(search_term):
 
     return curs.fetchall()
 
-def filterBook(dept, course_num, prof, cond):
+def filterBook(dept, course_num):
     CONN = getConn('textbooks_db')
     curs = dbi.cursor(CONN)
 
     # finds the S_books with the criterias
-    # needs to handle empty cases (or not?)
     curs.execute('''select * from S_books
                     where book in
-                    (select id from A_books
+                    (select id from courses
                     where department = %s
-                    and number = %s
-                    and professor = %s)
-                    and cond = %s''',
-                    [dept, course_num, prof, cond])
+                    and number = %s)''',
+                    [dept, course_num])
     return curs.fetchall()
 
 def uploadBook(dept, course_num, prof, price, condition, title, description):

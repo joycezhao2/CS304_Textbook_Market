@@ -12,7 +12,7 @@
 </div>
 
 <div>
-    <form method="POST" action="{{url_for('filterBook')}}">
+    <form method="GET" action="{{url_for('filterBook')}}">
         <p><label class="filter">Department:</label>
             <select id="dept" name="Department">
                 <!-- {% for dept in departments %}
@@ -38,18 +38,7 @@
                 <option value="111">111</option>
             </select>
         </p>
-        <p><label class="filter">Professor:</label>
-            <select id="prof" name="Professor">
-                <!-- {% for prof in professors %}
-                <option value="{{prof}}">{{prof}}</option>
-                {% endfor %} -->
-                <option value="">choose</option>
-                <option value="sanderson">Scott Anderson</option>
-                <option value="jwalsh">Julie Walsh</option>
-                <option value="jjoyce">Joseph Joyce</option>
-            </select>
-        </p>
-        <p><label class="filter">Condition:</label>
+        <!-- <p><label class="filter">Condition:</label>
             <select id="cond" name="Condition">
                     <option value="">choose</option>
                     <option value="new">Brand New</option>
@@ -58,7 +47,7 @@
                     <option value="good">Good</option>
                     <option value="acceptable">Acceptable</option>
             </select>
-        </p>
+        </p> -->
         <p>
             <input type="submit" name="filter" value="filter">
         </p>
@@ -76,6 +65,7 @@
                 <option value="price up">Price low to high</option>
                 <option value="price down">Price high to low</option>
                 <option value="newest">Newest posted</option>
+                <option value="condition">By Condition</option>
             </select>
         </p>
     </form>
@@ -135,25 +125,5 @@
         {% endfor %}
     </table>
 </div>
-
-<!-- <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.1/jquery.min.js"></script>
-<script>
-// var URL = "{{url_for('filterMovieAjax')}}";
-
-var progressive_on = false;
-$('#progressive_enhancement').on('click',function() {
-    if (progressive_on) {
-        // turn off JavaScript
-        $('input[name=filter], input[type=submit]').show();
-        $('#progressive_enhancement').text('Turn on Progressive Enhancement');
-        progressive_on = false;
-    } else {
-        // turn on JavaScript
-        $('input[name=filter], input[type=submit]').hide();
-        $('#progressive_enhancement').text('Turn off Progressive Enhancement');
-        progressive_on = true;
-    }
-})
-</script> -->
 
 {% endblock %}
