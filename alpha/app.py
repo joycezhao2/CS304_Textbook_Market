@@ -6,6 +6,7 @@ app = Flask(__name__)
 
 import random
 import lookup
+from flask_cas import CAS
 
 app.secret_key = 'your secret here'
 # replace that with a random key
@@ -17,13 +18,37 @@ app.secret_key = ''.join([ random.choice(('ABCDEFGHIJKLMNOPQRSTUVXYZ' +
 # This gets us better error messages for certain common request errors
 app.config['TRAP_BAD_REQUEST_ERRORS'] = True
 
+CAS(app)
+
+app.config['CAS_SERVER'] = 'https://login.wellesley.edu:443'
+app.config['CAS_LOGIN_ROUTE'] = '/module.php/casserver/cas.php/login'
+app.config['CAS_LOGOUT_ROUTE'] = '/module.php/casserver/cas.php/logout'
+app.config['CAS_VALIDATE_ROUTE'] = '/module.php/casserver/serviceValidate.php'
+app.config['CAS_AFTER_LOGIN'] = 'search'
+
+@app.route('/')
+def index():
+    if 'CAS_USERNAME' in session:
+        username = session['CAS_USERNAME']
+        return redirect(url_for('search'))
+    return render_template('login.html')
+
 ''' Route to handle the main search page. 
     When there is no search term, show all the movies '''
-@app.route('/',  defaults={'term': ''})
+@app.route('/search/',  defaults={'term': ''})
 @app.route('/search/<term>', methods=["GET"])
-def index(term):
+def search(term):
+    if 'CAS_USERNAME' in session:
+        username = session['CAS_USERNAME']
+    else:
+        return redirect(url_for('index'))
+
     books = lookup.searchBook(term)
-    return render_template('main.html',title='Hello', books=books)
+
+    return render_template('main.html',
+                            title='Hello',
+                            books=books,
+                            username=username)
 
 ''' Route to handle searching for a book'''
 @app.route('/searchBook/', methods=["POST"])
@@ -42,6 +67,11 @@ def searchBook():
 ''' Route to handle uploading a book'''
 @app.route('/submit/', methods=['GET', 'POST'])
 def submit():
+    if 'CAS_USERNAME' in session:
+        username = session['CAS_USERNAME']
+    else:
+        return redirect(url_for('index'))
+
     if request.method == 'POST':
         title = request.form.get('title')
         dept = request.form.get('department')
@@ -57,7 +87,7 @@ def submit():
 
         flash('Upload successful')
 
-    return render_template('submit.html', title='Upload')
+    return render_template('submit.html', title='Upload', username=username)
 
 ''' Route to handle adding to your cart (session based)'''
 @app.route('/addCart/', methods=["POST"])
@@ -74,6 +104,11 @@ def addCart():
 ''' Route to handle showing your cart and deleting from it'''
 @app.route('/session/cart/', methods=['GET','POST'])
 def session_cart():
+    if 'CAS_USERNAME' in session:
+        username = session['CAS_USERNAME']
+    else:
+        return redirect(url_for('index'))
+
     cart = session.get('cart',{}) 
     
     if request.method == 'GET':
@@ -82,7 +117,10 @@ def session_cart():
         for book_id in cart.keys():
             book = lookup.findBook(book_id)
             book_info.append(book)
-        return render_template('cart.html', title='Cart', cart=book_info)
+        return render_template('cart.html', 
+                                title='Cart',
+                                cart=book_info,
+                                username=username)
 
     elif request.method == 'POST':
         # removing from cart
@@ -94,22 +132,34 @@ def session_cart():
 ''' Route to display a book '''
 @app.route('/book/<id>/')
 def book(id):
+    if 'CAS_USERNAME' in session:
+        username = session['CAS_USERNAME']
+    else:
+        return redirect(url_for('index'))
+
     book = lookup.findBook(id)
     seller = lookup.searchUser(book['seller'])
     return render_template('book.html', 
                             title='Book',
                             book=book, 
-                            seller=seller)
+                            seller=seller,
+                            username=username)
 
 ''' Route to display a user '''
 @app.route('/users/<username>/')
 def user(username):
+    if 'CAS_USERNAME' in session:
+        loggedIn = session['CAS_USERNAME']
+    else:
+        return redirect(url_for('index'))
+
     user = lookup.searchUser(username)
     selling = lookup.findBooksBySeller(username)
     return render_template('users.html', 
                             title='User',
                             user=user, 
-                            selling=selling)  
+                            selling=selling,
+                            username=loggedIn)  
 
 ''' Route to display handle the buttons in the search page '''
 @app.route('/bookreq/', methods=["POST"])

@@ -9,11 +9,16 @@
 </head>
 <body>
 
-<a href="{{url_for('index')}}">Search</a>
-<a href="{{url_for('submit')}}">Sell</a>
-<a href="{{url_for('session_cart')}}">Your Cart</a>
-<a href="{{url_for('user', username='jzhao2')}}">Your Profile</a>
+<!-- Only show these navigation links if someone is logged in -->
+{% if username %}
+    <a href="{{url_for('index')}}">Search</a>
+    <a href="{{url_for('submit')}}">Sell</a>
+    <a href="{{url_for('session_cart')}}">Your Cart</a>
+    <a href="{{url_for('user', username='jzhao2')}}">Your Profile</a>
 
+    <!-- route defined by CAS -->
+    <form method="GET" action="/logout/"><button>logout</button></form>
+{% endif %}
 
 {% with messages = get_flashed_messages() %}
     {% if messages %}
