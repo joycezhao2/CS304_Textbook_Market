@@ -56,12 +56,22 @@ def searchBook():
     search_term = request.form.get("keyword")
     return redirect(url_for('index', term=search_term))
 
-# @app.route('/filterBook/', methods=["POST"])
-# def filterBook():
-#     dept = request.form.get('dept')
-#     course_num = request.form.get('num')
-#     prof = request.form.get('prof')
-#     cond = request.form.get('cond')
+@app.route('/filterBook/', methods=["GET"])
+def filterBook():
+    if 'CAS_USERNAME' in session:
+        username = session['CAS_USERNAME']
+    else:
+        return redirect(url_for('index'))
+    
+    dept = request.form.get('dept')
+    course_num = request.form.get('num')
+    prof = request.form.get('prof')
+    cond = request.form.get('cond')
+    books = lookup.filterBook(dept,course_num,prof,cond)
+    return render_template('main.html',
+                            title='Hello',
+                            books=books,
+                            username=username)
 
 
 ''' Route to handle uploading a book'''
