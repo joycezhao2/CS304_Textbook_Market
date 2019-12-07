@@ -76,15 +76,6 @@ def findBook(book_id):
 
     return curs.fetchone()
 
-def searchUser(username):
-    CONN = getConn('textbooks_db')
-    curs = dbi.dictCursor(CONN)
-
-    curs.execute('''select * from users where username=%s''',
-            [username])
-
-    return curs.fetchone()
-
 def findBooksBySeller(username):
     CONN = getConn('textbooks_db')
     curs = dbi.dictCursor(CONN)

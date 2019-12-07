@@ -8,8 +8,8 @@ import random
 import lookup
 from flask_cas import CAS
 
-#flask-mail imports
 from flask_mail import Mail, Message
+
 app.config.update(
     DEBUG=True,
     # EMAIL SETTINGS
@@ -46,8 +46,8 @@ def index():
         return redirect(url_for('search'))
     return render_template('login.html')
 
-''' Route to handle the main search page. 
-    When there is no search term, show all the movies '''
+''' Route to handle the search page. 
+    When there is no search term, show all the books for sale '''
 @app.route('/search/',  defaults={'term': ''})
 @app.route('/search/<term>', methods=["GET"])
 def search(term):
@@ -83,7 +83,6 @@ def filterBook():
                             title='Hello',
                             books=books,
                             username=username)
-
 
 ''' Route to handle uploading a book'''
 @app.route('/submit/', methods=['GET', 'POST'])
@@ -174,11 +173,15 @@ def user(username):
     else:
         return redirect(url_for('index'))
 
-    user = lookup.searchUser(username)
+    if 'CAS_ATTRIBUTES' in session:
+        attribs = session['CAS_ATTRIBUTES']
+        name = attribs['cas:givenName'] + ' '  + attribs['cas:sn']
+
     selling = lookup.findBooksBySeller(username)
     return render_template('users.html', 
                             title='User',
-                            user=user, 
+                            name=name, 
+                            email=attribs['cas:cn']+'@wellesley.edu',
                             selling=selling,
                             username=loggedIn)  
 
