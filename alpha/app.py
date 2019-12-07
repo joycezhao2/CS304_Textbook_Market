@@ -78,9 +78,7 @@ def filterBook():
     
     dept = request.form.get('dept')
     course_num = request.form.get('num')
-    prof = request.form.get('prof')
-    cond = request.form.get('cond')
-    books = lookup.filterBook(dept,course_num,prof,cond)
+    books = lookup.filterBook(dept,course_num)
     return render_template('main.html',
                             title='Hello',
                             books=books,

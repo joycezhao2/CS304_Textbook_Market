@@ -16,4 +16,4 @@ function update(obj) {
 
     if(obj.error) {
         $('#errors').empty().html('Error:'+obj.err);
-}
+}}
