@@ -12,8 +12,8 @@
 </div>
 
 <div>
-    <form class="filter" method="POST" action="">
-        <p><label for="dept">Department:</label>
+    <form method="POST" action="{{url_for('filterBook')}}">
+        <p><label class="filter">Department:</label>
             <select id="dept" name="Department">
                 <!-- {% for dept in departments %}
                 <option value="{{dept}}">{{dept}}</option>
@@ -26,7 +26,7 @@
                 <option value="PHIL">Philosophy</option>
             </select>
         </p>
-        <p><label for="num">Course Number:</label>
+        <p><label class="filter">Course Number:</label>
             <select id="num" name="Course Number">
                 <!-- {% for num in numbers %}
                 <option value="{{num}}">{{num}}</option>
@@ -38,7 +38,7 @@
                 <option value="111">111</option>
             </select>
         </p>
-        <p><label for="prof">Professor:</label>
+        <p><label class="filter">Professor:</label>
             <select id="prof" name="Professor">
                 <!-- {% for prof in professors %}
                 <option value="{{prof}}">{{prof}}</option>
@@ -49,7 +49,7 @@
                 <option value="jjoyce">Joseph Joyce</option>
             </select>
         </p>
-        <p><label for="cond">Condition:</label>
+        <p><label class="filter">Condition:</label>
             <select id="cond" name="Condition">
                     <option value="">choose</option>
                     <option value="new">Brand New</option>
@@ -58,6 +58,12 @@
                     <option value="good">Good</option>
                     <option value="acceptable">Acceptable</option>
             </select>
+        </p>
+        <p>
+            <input type="submit" name="filter" value="filter">
+        </p>
+        <p>This button turns on/off all the JavaScript:
+            <button id="progressive_enhancement"> Turn on Progressive Enhancement</button>
         </p>
     </form>
 </div>
@@ -129,5 +135,25 @@
         {% endfor %}
     </table>
 </div>
+
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.1/jquery.min.js"></script>
+<script>
+// var URL = "{{url_for('filterMovieAjax')}}";
+
+var progressive_on = false;
+$('#progressive_enhancement').on('click',function() {
+    if (progressive_on) {
+        // turn off JavaScript
+        $('input[name=filter], input[type=submit]').show();
+        $('#progressive_enhancement').text('Turn on Progressive Enhancement');
+        progressive_on = false;
+    } else {
+        // turn on JavaScript
+        $('input[name=filter], input[type=submit]').hide();
+        $('#progressive_enhancement').text('Turn off Progressive Enhancement');
+        progressive_on = true;
+    }
+})
+</script>
 
 {% endblock %}
