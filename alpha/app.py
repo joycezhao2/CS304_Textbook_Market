@@ -31,6 +31,14 @@ def searchBook():
     search_term = request.form.get("keyword")
     return redirect(url_for('index', term=search_term))
 
+# @app.route('/filterBook/', methods=["POST"])
+# def filterBook():
+#     dept = request.form.get('dept')
+#     course_num = request.form.get('num')
+#     prof = request.form.get('prof')
+#     cond = request.form.get('cond')
+
+
 ''' Route to handle uploading a book'''
 @app.route('/submit/', methods=['GET', 'POST'])
 def submit():
