@@ -152,25 +152,24 @@ def submit():
 
     if request.method == 'POST':
         title = request.form.get('title')
+        author = request.form.get('author')
         dept = request.form.get('department')
         course_num = request.form.get('number')
-        prof = request.form.get('prof')
         price = request.form.get('price')
         condition = request.form.get('condition')
         description = request.form.get('description')
-        
+
         # handling pictures
         pic = request.files['pic']
         user_filename = pic.filename
         ext = user_filename.split('.')[-1]
-        filename = secure_filename('{}.{}'.format(title,ext))
+        filename = secure_filename('{}-{}.{}'.format(username,title,ext))
         pathname = os.path.join(app.config['UPLOADS'],filename)
         pic.save(pathname)
 
         # insert into db
-        lookup.uploadBook(dept, course_num, 
-                            prof, price, condition,
-                            title, description, filename)
+        lookup.uploadBook(dept, course_num, price, condition, title, author, 
+                            description, username, filename)
 
         flash('Upload successful')
 
