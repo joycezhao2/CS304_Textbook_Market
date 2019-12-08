@@ -9,3 +9,7 @@ h1 {
     font-size: 200%;
     color: teal;
 }
+
+* {
+    font-family: "Courier New", Courier, monospace;
+}

@@ -19,7 +19,6 @@ app.config.update(
     MAIL_USERNAME='textbookmarket@wellesley.edu'
 )
 mail = Mail(app)
-# end of mail stuff;
 
 app.secret_key = 'your secret here'
 # replace that with a random key
@@ -190,7 +189,6 @@ def submit():
 @app.route('/pic/<bid>')
 def pic(bid):
     filename = lookup.getPic(bid)   
-    print(bid, filename)
     return send_from_directory(app.config['UPLOADS'],filename[0])
 
 ''' Route to handle adding to your cart (session based)'''
@@ -216,11 +214,8 @@ def session_cart():
     cart = session.get('cart',{}) 
     
     if request.method == 'GET':
-        book_info = []
-
-        for book_id in cart.keys():
-            book = lookup.findBook(book_id)
-            book_info.append(book)
+        book_info = [lookup.findBook(book_id) for book_id in cart.keys()]
+        
         return render_template('cart.html', 
                                 title='Cart',
                                 cart=book_info,
@@ -242,10 +237,28 @@ def book(id):
         return redirect(url_for('index'))
 
     book = lookup.findBook(id) 
-    # check if the book is sold, if so, check the box
+
+    c = book['condition']
+    condition =''
+    if c == '5':
+        condition = 'Brand New' 
+    elif c == '4':
+        condition = 'Like New' 
+    elif c == '3':
+        condition = 'Very Good'
+    elif c == '2':
+        condition = 'Good'  
+    elif c == '1':
+        condition = 'Acceptable'
+
+    course_id = book['course']
+    related_course = lookup.getCourseByID(course_id)
+
     return render_template('book.html', 
                             title='Book',
                             book=book, 
+                            course=related_course,
+                            condition=condition,
                             seller=book['seller'],
                             email=book['seller']+'@wellesley.edu',
                             username=username)
@@ -309,7 +322,7 @@ def bookreq():
 
 @app.route('/update_sold_status_ajax/', methods=["POST"])
 def updateSoldStatusAjax():
-    bid = request.form.get('bid')
+    bid = request.form.get('id')
     status = request.form['sold_status']
     status = lookup.setSoldStatus(bid,status)
     return jsonify({'sold_status': status})

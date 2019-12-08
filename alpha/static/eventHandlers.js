@@ -32,34 +32,22 @@ function update(obj) {
 }
 
 $("input[type=checkbox]").on('change', function() {
-    console.log('checked!!!')
     bid = $('[name=bookid').val();
-    console.log(bid);
+    
     if (this.checked) {
         sendSoldStatus(1,bid);
     } else {
         sendSoldStatus(0,bid);
     }
-    
-    // if (this.checked) {
-    //     sendSoldStatus(1,bid)
-    // }
-    // else {
-    //     sendSoldStatus(0,bid)
-    // }
 });
 
 // Send sold status and book id to the backend
 function sendSoldStatus(sold_status, book_id){
-    console.log("inside sendSoldStatus");
-    console.log(book_id);
-    console.log(sold_status);
     $.post(URL,{'sold_status': sold_status, 'id': book_id}, addToPage);
 }
 
 // Display the updated sold status on the page
 function addToPage(json_data){
-    console.log("inside addToPage");
     if (json_data['sold_status'] == 0) {
         $("#sold_status").text("Available");
     }

@@ -10,7 +10,12 @@
         <li>
             <a href="{{url_for('book', id=book['id'])}}">{{book['title']}}</a>
             {% if loggedInUser == username %}    
+
+            {% if book['sold_status'] == 1 %}
+                <span><input type="checkbox" name="markAsSold" value="soldStatus" checked> Mark as Sold <br>
+                {% else %}
                 <span><input type="checkbox" name="markAsSold" value="soldStatus"> Mark as Sold <br>
+                {% endif %}              
             {% endif %}            
             </span>
         </li>
@@ -31,6 +36,12 @@
         <input type="submit" name="submit" value="Send Email">
     </form>
 {% endif %}
+
+<script src="http://ajax.googleapis.com/ajax/libs/jquery/3.1.1/jquery.min.js"></script>
+<script>
+    var URL = "{{url_for('updateSoldStatusAjax')}}"
+</script>
+<script src="{{url_for('static',filename='eventHandlers.js')}}"></script>
 
 {% endblock %}
 

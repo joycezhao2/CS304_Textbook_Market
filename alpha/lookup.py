@@ -2,8 +2,8 @@ import dbi
 
 '''Returns a database connection for that db'''
 def getConn(db):
-    # dsn = dbi.read_cnf("~/.textbook.cnf")
-    dsn = dbi.read_cnf()
+    dsn = dbi.read_cnf("~/.textbook.cnf")
+    # dsn = dbi.read_cnf()
     conn = dbi.connect(dsn)
     dbi.select_db(conn,db)
     return conn
@@ -23,7 +23,9 @@ def searchBook(search_term):
     CONN = getConn('textbooks_db')
     curs = dbi.dictCursor(CONN)
 
-    curs.execute('''select * from books where title like %s''',
+    curs.execute('''select * from books 
+                    where title like %s
+                    and sold_status = 0''',
             ['%'+search_term+'%'])
 
     return curs.fetchall()
@@ -37,7 +39,8 @@ def filterBook(dept, order):
         curs.execute('''select * from books
                         where course in
                         (select id from courses
-                        where department = %s)''',
+                        where department = %s)
+                        and sold_status = 0''',
                         [dept])
         return curs.fetchall()
     elif order == "price up":
@@ -45,6 +48,7 @@ def filterBook(dept, order):
                         where course in
                         (select id from courses
                         where department = %s)
+                        and sold_status = 0
                         order by price asc''',
                         [dept])
         return curs.fetchall()
@@ -53,6 +57,7 @@ def filterBook(dept, order):
                         where course in
                         (select id from courses
                         where department = %s)
+                        and sold_status = 0
                         order by price desc''',
                         [dept])
         return curs.fetchall()
@@ -61,6 +66,7 @@ def filterBook(dept, order):
                         where course in
                         (select id from courses
                         where department = %s)
+                        and sold_status = 0
                         order by id desc''',
                         [dept])
         return curs.fetchall()
@@ -69,6 +75,7 @@ def filterBook(dept, order):
                         where course in
                         (select id from courses
                         where department = %s)
+                        and sold_status = 0
                         order by `condition` desc''',
                         [dept])
         return curs.fetchall()
@@ -89,7 +96,8 @@ def getSellingDepts():
     curs.execute('''select distinct department
                     from courses
                     inner join books
-                    where (courses.id = books.course)''')
+                    where (courses.id = books.course)
+                    and books.sold_status = 0''')
     return curs.fetchall()
 
 def getSellingNums():
@@ -100,7 +108,8 @@ def getSellingNums():
     curs.execute('''select distinct number
                     from courses
                     inner join books
-                    where (courses.id = books.course)''')
+                    where (courses.id = books.course)
+                    and books.sold_status = 0''')
     return curs.fetchall()
 
 def getAllNums():
@@ -117,7 +126,7 @@ def getCourseNumbers(dept):
     curs = dbi.cursor(CONN)
 
     # finds all course numbers in the selected department
-    curs.execute('''select number from courses
+    curs.execute('''select distinct number from courses
                     where department = %s''',
                     [dept])
     return curs.fetchall()
@@ -185,7 +194,7 @@ def findBooksBySeller(username):
 def setSoldStatus(book_id, status):
     CONN = getConn('textbooks_db')
     curs = dbi.cursor(CONN)
-    # check if these conditionals are correct
+
     if status == '1':
         curs.execute('''UPDATE books SET sold_status = 1 WHERE id=%s''',
             [book_id])
@@ -194,3 +203,13 @@ def setSoldStatus(book_id, status):
         curs.execute('''UPDATE books SET sold_status = 0 WHERE id=%s''',
             [book_id])
         return 0
+
+def getCourseByID(cid):
+    CONN = getConn('textbooks_db')
+    curs = dbi.dictCursor(CONN)
+
+    curs.execute('''select department, number 
+                    from courses where id=%s''',
+                    [cid])
+
+    return curs.fetchone()

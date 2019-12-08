@@ -3,6 +3,7 @@
 {% block main_content %}
 
 <h1>{{book['title']}}</h1>
+<h2>{{course['department']}} {{course['number']}}</h2>
 
 <p>
     <img src="{{url_for('pic', bid=book['id'])}} " alt="{{book['pic']}}">
@@ -15,17 +16,24 @@
 {% else %}
     <p>Status: Sold</p>
 {% endif %}
-<p>Condition: {{book['condition']}}</p>
+<p>Condition: {{condition}}</p>
 <p>Seller: <a href="{{url_for('user', username=seller)}}">{{seller}}</a></p>
 
-{% if username == seller %}    
-<form id="soldStatus">
-    <input type="checkbox" name="markAsSold" value="soldStatus"> Mark as Sold   
-</form>
-     
+{% if username == seller %}  
+
+{% if book['sold_status'] == 1 %}
+    <form id="soldStatus">
+        <input type="checkbox" name="markAsSold" value="soldStatus" checked> Mark as Sold   
+    </form>
+{% else %}
+    <form id="soldStatus">
+        <input type="checkbox" name="markAsSold" value="soldStatus"> Mark as Sold   
+    </form>
 {% endif %}    
 
-<form method="POST" action="/addCart/">
+{% endif %}    
+
+<form method="POST" action="{{url_for('addCart')}}">
     <input type="hidden" name="bookid" value="{{book['id']}}">
     <input type="submit" name="submit" value="Add to Cart">
 </form>
