@@ -77,8 +77,13 @@ def search(term):
 
     books = lookup.searchBook(term)
 
+    deptSold = lookup.getSellingDepts()
+    numberSold = lookup.getSellingNums()
+
     return render_template('main.html',
                             title='Hello',
+                            depts=deptSold,
+                            nums=numberSold,
                             books=books,
                             username=username)
 
@@ -88,26 +93,37 @@ def searchBook():
     search_term = request.form.get("keyword")
     return redirect(url_for('index', term=search_term))
 
-@app.route('/filterBook/', methods=["GET"])
-def filterBook():
+@app.route('/filter/', methods=["GET"])
+def filter():
     if 'CAS_USERNAME' in session:
         username = session['CAS_USERNAME']
     else:
         return redirect(url_for('index'))
     
     try: 
-        dept = request.args.get('dept')
-        course_num = request.args.get('num')
-        order = request.args.get('sort')
+        dept = request.args.get('department')
+        order = request.args.get('sorting')
 
-        books = lookup.filterBook(dept,course_num,order)
+        books = lookup.filterBook(dept, order)
+
+        deptSold = lookup.getSellingDepts()
+        numberSold = lookup.getSellingNums()
+
         return render_template('main.html',
                                 title='Hello',
+                                depts=deptSold,
+                                nums=numberSold,
                                 books=books,
                                 username=username)
     except Exception as err:
         flash('form submission error' + str(err))
         return redirect(url_for('index'))
+
+@app.route('/filterBook/', methods=["POST"])
+def filterBook():
+    dept = request.form.get('department')
+    order = request.form.get('sorting')
+    return redirect(url_for('filter', dept=dept, order=''))
 
 # @app.route('/filterBookAjax/', methods=['POST'])
 # def filterBookAjax():
@@ -153,17 +169,22 @@ def submit():
     if request.method == 'POST':
         title = request.form.get('title')
         author = request.form.get('author')
-        dept = request.form.get('department')
-        course_num = request.form.get('number')
+        dept = request.form.get('departments')
+        course_num = request.form.get('course_nums')
         price = request.form.get('price')
         condition = request.form.get('condition')
         description = request.form.get('description')
 
         # handling pictures
         pic = request.files['pic']
-        user_filename = pic.filename
-        ext = user_filename.split('.')[-1]
-        filename = secure_filename('{}-{}.{}'.format(username,title,ext))
+
+        if pic.filename == '': 
+            filename = secure_filename('default.png')
+        else: 
+            user_filename = pic.filename
+            ext = user_filename.split('.')[-1]
+            filename = secure_filename('{}-{}.{}'.format(username,title,ext))
+
         pathname = os.path.join(app.config['UPLOADS'],filename)
         pic.save(pathname)
 
@@ -178,6 +199,12 @@ def submit():
                             username=username,
                             depts=departments,
                             cnums=course_nums)
+
+@app.route('/pic/<bid>')
+def pic(bid):
+    filename = lookup.getPic(bid)   
+    print(bid, filename)
+    return send_from_directory(app.config['UPLOADS'],filename[0])
 
 ''' Route to handle adding to your cart (session based)'''
 @app.route('/addCart/', methods=["POST"])

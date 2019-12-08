@@ -12,32 +12,23 @@
 </div>
 
 <div>
-    <form method="GET" action="{{url_for('filterBook')}}">
+    <form method="GET" action="{{url_for('filter')}}">
         <p><label class="filter">Department:</label>
-            <select id="dept" name="Department">
-                <!-- {% for dept in departments %}
-                <option value="{{dept}}">{{dept}}</option>
-                {% endfor %} -->
+            <select id="dept" name="department">
                 <option value="">choose</option>
-                <option value="CS">Computer Science</option>
-                <option value="ECON">Economics</option>
-                <option value="ARTH">Art History</option>
-                <option value="BIO">Biology</option>
-                <option value="PHIL">Philosophy</option>
+                {% for dept in depts %}
+                    <option value="{{dept[0]}}">{{dept[0]}}</option>
+                {% endfor %}
             </select>
         </p>
-        <p><label class="filter">Course Number:</label>
-            <select id="num" name="Course Number">
-                <!-- {% for num in numbers %}
-                <option value="{{num}}">{{num}}</option>
-                {% endfor %} -->
+        <!-- <p><label class="filter">Course Number:</label>
+            <select id="num" name="course_number">
                 <option value="">choose</option>
-                <option value="100">100</option>
-                <option value="101">101</option>
-                <option value="106">106</option>
-                <option value="111">111</option>
+                {% for num in nums %}
+                    <option value="{{num[0]}}">{{num[0]}}</option>
+                {% endfor %}
             </select>
-        </p>
+        </p> -->
         <p><label for="sort">Sort by:</label>
             <select id="sort" name="sorting">
                 <option value="">choose</option>
@@ -48,7 +39,7 @@
             </select>
         </p>
         <p>
-            <input type="submit" name="filter" value="filter">
+            <input type="submit" value="filter">
         </p>
         <p>This button turns on/off all the JavaScript:
             <button id="progressive_enhancement"> Turn on Progressive Enhancement</button>
@@ -76,13 +67,11 @@
 <div>
     <table id="book-list">
         <tr>
-            <th>Picture</th>
             <th>Info</th>
             <th>Action</th>
         </tr>
         {% for book in books %}
             <tr>
-                <td class="pic"></td>
                 <td class="info">
                     <ul>
                         <li><a href="{{url_for('book', id=book['id'])}}">{{book['title']}}</a></li>
