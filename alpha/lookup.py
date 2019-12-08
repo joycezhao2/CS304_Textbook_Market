@@ -130,7 +130,7 @@ def uploadBook(dept, course_num, prof, price, condition, title, description,file
                                         pic
                                         )
                     values (%s,%s,%s,%s,%s,%s,%s,%s,%s)''',
-                    [price, 0, condition, title, description, 'jzhao2', None, book_id,filename])
+                    [price, 0, condition, title, description, seller, None, book_id,filename])
 
 def findBook(book_id):
     CONN = getConn('textbooks_db')
@@ -140,6 +140,14 @@ def findBook(book_id):
             [book_id])
 
     return curs.fetchone()
+
+def createUser(name, username):
+    CONN = getConn('textbooks_db')
+    curs = dbi.dictCursor(CONN)
+
+    curs.execute('''insert into users(username, name, email, phnum)
+                    values(%s, %s, %s, %s)''',
+                    [username, name, username+'@wellesley.edu', None])
 
 def searchUser(username):
     CONN = getConn('textbooks_db')

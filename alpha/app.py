@@ -8,6 +8,19 @@ import lookup
 import imghdr
 from flask_cas import CAS
 
+from flask_mail import Mail, Message
+
+app.config.update(
+    DEBUG=True,
+    # EMAIL SETTINGS
+    MAIL_SERVER='localhost',    # default; works on Tempest
+    MAIL_PORT=25,               # default
+    MAIL_USE_SSL=False,         # default
+    MAIL_USERNAME='textbookmarket@wellesley.edu'
+)
+mail = Mail(app)
+# end of mail stuff;
+
 app.secret_key = 'your secret here'
 # replace that with a random key
 app.secret_key = ''.join([ random.choice(('ABCDEFGHIJKLMNOPQRSTUVXYZ' +
@@ -24,7 +37,7 @@ app.config['CAS_SERVER'] = 'https://login.wellesley.edu:443'
 app.config['CAS_LOGIN_ROUTE'] = '/module.php/casserver/cas.php/login'
 app.config['CAS_LOGOUT_ROUTE'] = '/module.php/casserver/cas.php/logout'
 app.config['CAS_VALIDATE_ROUTE'] = '/module.php/casserver/serviceValidate.php'
-app.config['CAS_AFTER_LOGIN'] = 'search'
+app.config['CAS_AFTER_LOGIN'] = 'verify'
 app.config['UPLOADS'] = 'pic'
 
 @app.route('/')
@@ -34,8 +47,26 @@ def index():
         return redirect(url_for('search'))
     return render_template('login.html')
 
-''' Route to handle the main search page. 
-    When there is no search term, show all the movies '''
+@app.route('/verify/', methods=["GET", "POST"])
+def verify():
+    username = session['CAS_USERNAME']
+    user = lookup.searchUser(username)
+    
+    if request.method == 'GET':
+        # if they've created an account before
+        if user:
+            return redirect(url_for('search'))
+
+        # otherwise have them make an account
+        return render_template('account.html')
+    
+    elif request.method == 'POST':
+        name = request.form.get('name')
+        lookup.createUser(name, username)
+        return redirect(url_for('search'))
+
+''' Route to handle the search page. 
+    When there is no search term, show all the books for sale '''
 @app.route('/search/',  defaults={'term': ''})
 @app.route('/search/<term>', methods=["GET"])
 def search(term):
@@ -197,29 +228,56 @@ def book(id):
     else:
         return redirect(url_for('index'))
 
-    book = lookup.findBook(id)
-    seller = lookup.searchUser(book['seller'])
+    book = lookup.findBook(id) 
+
     return render_template('book.html', 
                             title='Book',
                             book=book, 
-                            seller=seller,
+                            seller=book['seller'],
+                            email=book['seller']+'@wellesley.edu',
                             username=username)
 
 ''' Route to display a user '''
 @app.route('/users/<username>/')
 def user(username):
     if 'CAS_USERNAME' in session:
-        loggedIn = session['CAS_USERNAME']
+        loggedInUser = session['CAS_USERNAME']
     else:
         return redirect(url_for('index'))
 
-    user = lookup.searchUser(username)
     selling = lookup.findBooksBySeller(username)
+    user = lookup.searchUser(username)
+
     return render_template('users.html', 
                             title='User',
-                            user=user, 
+                            name=user['name'], 
                             selling=selling,
-                            username=loggedIn)  
+                            username=username,
+                            loggedInUser=loggedInUser)  
+
+@app.route('/send_mail/', methods=["GET", "POST"])
+def send_mail():
+    if request.method == 'GET':
+        return redirect(request.referrer)
+    else:
+        try:
+             # throw error if there's trouble
+            sender = session['CAS_USERNAME'] + "@wellesley.edu"
+            recipient = request.form.get("userEmail")
+            subject = request.form['subject']
+            body = request.form['body']
+            msg = Message(subject=subject,
+                          sender=sender,
+                          recipients=[recipient],
+                          body=body)
+            mail.send(msg)
+            flash('email sent successfully')
+            return redirect(request.referrer)
+
+        except Exception as err:
+            print(['err',err])
+            flash('form submission error'+str(err))
+            return redirect(request.referrer)
 
 ''' Route to display handle the buttons in the search page '''
 @app.route('/bookreq/', methods=["POST"])
@@ -230,7 +288,7 @@ def bookreq():
         return redirect(url_for('book',id=bid))
     elif submit == "Seller Information":
         uid = request.form.get("uid")
-        return redirect(url_for('user', username='jzhao2'))
+        return redirect(url_for('user', username=uid))
     elif submit == "Add to Cart":
         return redirect(url_for('addCart'),  code=307)
     else:
