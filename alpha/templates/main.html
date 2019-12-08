@@ -41,9 +41,9 @@
         <p>
             <input type="submit" value="filter">
         </p>
-        <p>This button turns on/off all the JavaScript:
+        <!-- <p>This button turns on/off all the JavaScript:
             <button id="progressive_enhancement"> Turn on Progressive Enhancement</button>
-        </p>
+        </p> -->
     </form>
 </div>
 
@@ -92,25 +92,5 @@
         {% endfor %}
     </table>
 </div>
-
-<!-- <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.1/jquery.min.js"></script>
-<script>
-    
-    var progressive_on = false;
-    $('#progressive_enhancement').on('click',function() {
-        if (progressive_on) {
-            // turn off JavaScript
-            $('input[name=filter], input[type=submit]').show();
-            $('#progressive_enhancement').text('Turn on Progressive Enhancement');
-            progressive_on = false;
-        } else {
-            // turn on JavaScript
-            $('input[name=filter], input[type=submit]').hide();
-            $('#progressive_enhancement').text('Turn off Progressive Enhancement');
-            progressive_on = true;
-        }
-    })
-</script>
-<script src="{{url_for('static',filename='eventHandlers.js')}}"></script> -->
 
 {% endblock %}
