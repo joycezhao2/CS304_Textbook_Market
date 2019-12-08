@@ -1,45 +1,32 @@
 // JavaScript File to add event handlers
 /* global $ sendInfo progressive_enhancement_on */
 
-$('#dept').on("click",function() {
-    if (progressive_enhacement) {
-        event.precentDefault();
+// $('#dept').change(function() {
+//     if (progressive_on) {
+//         event.preventDefault();
 
-        var dept = $(this).val();
+//         var dept = $('#dept :selected').text();
         
-        $.post(URL,{'dept':dept,'nums':0},updateN,'json');
-    }
+//         $.post(URL,{'dept':dept},update,'json');
+//     }
+// })
+
+$('select[name="departments"]').change(function() {
+    var dept = $(this).val();
+    $.post(URL,{'dept':dept},update);
 })
 
-$('#num').on("click",function() {
-    if (progressive_enhacement) {
-        event.preventDefault();
-
-        var dept = $('#dept').val();
-        var num = $(this).val();
-
-        $.post(URL,{'dept':dept,'nums':num},updateB,'json');
-    }
-})
-
-function updateN(obj) {
+function update(obj) {
     console.log(obj)
-
     if(obj.error) {
         $('#errors').empty().html('Error:'+obj.err);
     } else {
-        $("#num").val(obj.nums)
-        console.log(obj)
-    }
-}
-
-function updateB(obj) {
-    console.log(obj)
-
-    if(obj.error) {
-        $('#errors').empty().html('Error:'+obj.err);
-    } else {
-        $("#book-list").val(obj.books)
+        $('#nums').empty();
+        var options = obj.nums;
+        console.log(options)
+        for (var i=0;i<options.length;i++){
+            $('<option/>').val(options[i][0]).html(options[i][0]).appendTo('#nums');
+         }
         console.log(obj)
     }
 }

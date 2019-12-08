@@ -1,3 +1,4 @@
+
 use textbooks_db;
 
 load data local infile 'courses.csv' 

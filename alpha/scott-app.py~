@@ -42,6 +42,9 @@ app.config['UPLOADS'] = 'pic'
 
 @app.route('/')
 def index():
+    msg = 'filterBookAjax url is '+url_for('filterBookAjax')
+    print(msg)
+    flash(msg)
     if 'CAS_USERNAME' in session:
         username = session['CAS_USERNAME']
         return redirect(url_for('search'))
@@ -77,13 +80,8 @@ def search(term):
 
     books = lookup.searchBook(term)
 
-    deptSold = lookup.getSellingDepts()
-    numberSold = lookup.getSellingNums()
-
     return render_template('main.html',
                             title='Hello',
-                            depts=deptSold,
-                            nums=numberSold,
                             books=books,
                             username=username)
 
@@ -93,54 +91,56 @@ def searchBook():
     search_term = request.form.get("keyword")
     return redirect(url_for('index', term=search_term))
 
-@app.route('/filter/', methods=["GET"])
-def filter():
+@app.route('/filterBook/', methods=["GET"])
+def filterBook():
     if 'CAS_USERNAME' in session:
         username = session['CAS_USERNAME']
     else:
         return redirect(url_for('index'))
     
     try: 
-        dept = request.args.get('department')
-        order = request.args.get('sorting')
+        dept = request.args.get('dept')
+        course_num = request.args.get('num')
+        order = request.args.get('sort')
 
-        books = lookup.filterBook(dept, order)
-
-        deptSold = lookup.getSellingDepts()
-        numberSold = lookup.getSellingNums()
-
+        books = lookup.filterBook(dept,course_num,order)
         return render_template('main.html',
                                 title='Hello',
-                                depts=deptSold,
-                                nums=numberSold,
                                 books=books,
                                 username=username)
     except Exception as err:
         flash('form submission error' + str(err))
         return redirect(url_for('index'))
 
-@app.route('/filterBook/', methods=["POST"])
-def filterBook():
-    dept = request.form.get('department')
-    order = request.form.get('sorting')
-    return redirect(url_for('filter', dept=dept, order=''))
-
-@app.route('/uploadBookAjax/', methods=['POST'])
-def uploadBookAjax():
+@app.route('/filterBookAjax/', methods=['POST'])
+def filterBookAjax():
     if 'CAS_USERNAME' in session:
         username = session['CAS_USERNAME']
     else:
         return redirect(url_for('index'))
 
     dept = request.form['dept']
-    courses = lookup.getCourseNumbers(dept)
-    try:
-        return jsonify({'error':False, 
-                        'dept':dept, 
-                        'nums':courses})
-    except Exception as err:
-        print(err)
-        return jsonify({'error':True, 'err':str(err)})
+    course_nums = request.form['nums']
+    if len(course_nums) == 1:
+        books = lookup.filterBook(dept,course_nums)
+        try:
+            return jsonify({'error':False, 
+                            'dept':dept, 
+                            'nums':course_nums,
+                            'books':books})
+        except Exception as err:
+            print(err)
+            return jsonify({'error':True, 'err':str(err)})
+    elif course_nums == 0:
+        courses = lookup.getCourseNumbers(dept)
+        # books = lookup.getDeptBooks(dept)
+        try:
+            return jsonify({'error':False,
+                            'dept':dept,
+                            'nums':courses})
+        except Exception as err:
+            print(err)
+            return jsonify({'error':True, 'err':str(err)})
 
 ''' Route to handle uploading a book'''
 @app.route('/submit/', methods=['GET', 'POST'])
@@ -155,29 +155,26 @@ def submit():
 
     if request.method == 'POST':
         title = request.form.get('title')
-        author = request.form.get('author')
-        dept = request.form.get('departments')
-        course_num = request.form.get('course_nums')
+        dept = request.form.get('department')
+        course_num = request.form.get('number')
+        prof = request.form.get('prof')
         price = request.form.get('price')
         condition = request.form.get('condition')
         description = request.form.get('description')
-
+        
         # handling pictures
         pic = request.files['pic']
-
-        if pic.filename == '': 
-            filename = secure_filename('default.png')
-        else: 
-            user_filename = pic.filename
-            ext = user_filename.split('.')[-1]
-            filename = secure_filename('{}-{}.{}'.format(username,title,ext))
-
+        user_filename = pic.filename
+        ext = user_filename.split('.')[-1]
+        filename = secure_filename('{}-{}.{}'.format(username,title,ext))
         pathname = os.path.join(app.config['UPLOADS'],filename)
         pic.save(pathname)
 
         # insert into db
-        lookup.uploadBook(dept, course_num, price, condition, title, author, 
-                            description, username, filename)
+        lookup.uploadBook(dept, course_num, 
+                            prof, price, condition,
+                            title, description,
+                            username, filename)
 
         flash('Upload successful')
 
@@ -186,12 +183,6 @@ def submit():
                             username=username,
                             depts=departments,
                             cnums=course_nums)
-
-@app.route('/pic/<bid>')
-def pic(bid):
-    filename = lookup.getPic(bid)   
-    print(bid, filename)
-    return send_from_directory(app.config['UPLOADS'],filename[0])
 
 ''' Route to handle adding to your cart (session based)'''
 @app.route('/addCart/', methods=["POST"])
@@ -242,7 +233,7 @@ def book(id):
         return redirect(url_for('index'))
 
     book = lookup.findBook(id) 
-    # check if the book is sold, if so, check the box
+
     return render_template('book.html', 
                             title='Book',
                             book=book, 
@@ -306,13 +297,6 @@ def bookreq():
         return redirect(url_for('addCart'),  code=307)
     else:
         return redirect("/")
-
-@app.route('/update_sold_status_ajax/', methods=["POST"])
-def updateSoldStatusAjax():
-    bid = request.form.get('bid')
-    status = request.form['sold_status']
-    status = lookup.setSoldStatus(bid,status)
-    return jsonify({'sold_status': status})
 
 if __name__ == '__main__':
     import sys, os

@@ -1,0 +1,14 @@
+{% extends "base.html" %}
+
+{% block main_content %}
+<h1>Textbook Browser</h1>
+
+<!-- route defined by CAS; dunno why they don't use url_for() -->
+<form method="GET" action="/login/"><button>login</button></form>
+
+<form method=POST action="{{url_for('filterBookAjax')}}">
+  <p>post to {{url_for('filterBookAjax')}}</p>
+  <input type="submit">
+</form>
+
+{% endblock %}
