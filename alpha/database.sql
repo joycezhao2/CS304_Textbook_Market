@@ -1,8 +1,6 @@
 use textbooks_db;
 
-drop table if exists S_books;
-drop table if exists A_book_course;
-drop table if exists A_books;
+drop table if exists books;
 drop table if exists courses;
 drop table if exists users;
 
