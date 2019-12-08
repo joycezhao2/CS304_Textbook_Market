@@ -255,7 +255,7 @@ def book(id):
         return redirect(url_for('index'))
 
     book = lookup.findBook(id) 
-
+    # check if the book is sold, if so, check the box
     return render_template('book.html', 
                             title='Book',
                             book=book, 
@@ -319,6 +319,13 @@ def bookreq():
         return redirect(url_for('addCart'),  code=307)
     else:
         return redirect("/")
+
+@app.route('/update_sold_status_ajax/', methods=["POST"])
+def updateSoldStatusAjax():
+    bid = request.form.get('bid')
+    status = request.form['sold_status']
+    status = lookup.setSoldStatus(bid,status)
+    return jsonify({'sold_status': status})
 
 if __name__ == '__main__':
     import sys, os

@@ -181,3 +181,16 @@ def findBooksBySeller(username):
             [username])
 
     return curs.fetchall()
+
+def setSoldStatus(book_id, status):
+    CONN = getConn('textbooks_db')
+    curs = dbi.cursor(CONN)
+    # check if these conditionals are correct
+    if status == '1':
+        curs.execute('''UPDATE books SET sold_status = 1 WHERE id=%s''',
+            [book_id])
+        return 1
+    else: 
+        curs.execute('''UPDATE books SET sold_status = 0 WHERE id=%s''',
+            [book_id])
+        return 0
