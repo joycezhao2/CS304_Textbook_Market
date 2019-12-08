@@ -8,9 +8,6 @@ def getConn(db):
     dbi.select_db(conn,db)
     return conn
 
-# Makes the database connection available globally
-# CONN = getConn('textbooks_db')
-
 def searchBook(search_term):
     CONN = getConn('textbooks_db')
     curs = dbi.dictCursor(CONN)
@@ -20,20 +17,87 @@ def searchBook(search_term):
 
     return curs.fetchall()
 
-def filterBook(dept, course_num):
+def filterBook(dept, course_num,order):
     CONN = getConn('textbooks_db')
     curs = dbi.cursor(CONN)
 
     # finds the S_books with the criterias
-    curs.execute('''select * from S_books
-                    where book in
-                    (select id from courses
-                    where department = %s
-                    and number = %s)''',
-                    [dept, course_num])
+    if order == null:
+        curs.execute('''select * from S_books
+                        where book in
+                        (select id from courses
+                        where department = %s
+                        and number = %s)''',
+                        [dept, course_num])
+        return curs.fetchall()
+    elif order == "price up":
+        curs.execute('''select * from S_books
+                        where book in
+                        (select id from courses
+                        where department = %s
+                        and number = %s)
+                        order by price asc''',
+                        [dept, course_num])
+        return curs.fetchall()
+    elif order == "price down":
+        curs.execute('''select * from S_books
+                        where book in
+                        (select id from courses
+                        where department = %s
+                        and number = %s)
+                        order by price desc''',
+                        [dept, course_num])
+        return curs.fetchall()
+    elif order == "newest":
+        curs.execute('''select * from S_books
+                        where book in
+                        (select id from courses
+                        where department = %s
+                        and number = %s)
+                        order by id desc''',
+                        [dept, course_num])
+        return curs.fetchall()
+    elif order == 'condition':
+        curs.execute('''select * from S_books
+                        where book in
+                        (select id from courses
+                        where department = %s
+                        and number = %s)
+                        order by `condition` desc''',
+                        [dept, course_num])
+        return curs.fetchall()
+
+def getAllDepts():
+    CONN = getConn('textbooks_db')
+    curs = dbi.cursor(CONN)
+
+    # gets all unique value of departments
+    curs.execute('''select distinct department from courses''')
     return curs.fetchall()
 
-def uploadBook(dept, course_num, prof, price, condition, title, description):
+def getAllNums():
+    CONN = getConn('textbooks_db')
+    curs = dbi.cursor(CONN)
+
+    # gets all unique value of course numbers
+    curs.execute('''select distinct number from courses''')
+    return curs.fetchall()
+
+def getCourseNumbers(dept):
+    CONN = getConn('textbooks_db')
+    curs = dbi.cursor(CONN)
+
+    # finds all course numbers in the selected department
+    curs.execute('''select number from courses
+                    where department = $s''',
+                    [dept])
+    return curs.fetchall()
+
+# def getDeptBooks(dept):
+#     CONN = getConn('textbooks_db')
+#     curs = dbi.cursor(CONN)
+
+def uploadBook(dept, course_num, prof, price, condition, title, description,filename):
     CONN = getConn('textbooks_db')
     curs = dbi.cursor(CONN)
 
@@ -62,10 +126,11 @@ def uploadBook(dept, course_num, prof, price, condition, title, description):
                                         description,
                                         seller,
                                         buyer, 
-                                        book
+                                        book,
+                                        pic
                                         )
-                    values (%s,%s,%s,%s,%s,%s,%s,%s)''',
-                    [price, 0, condition, title, description, 'jzhao2', None, book_id])
+                    values (%s,%s,%s,%s,%s,%s,%s,%s,%s)''',
+                    [price, 0, condition, title, description, 'jzhao2', None, book_id,filename])
 
 def findBook(book_id):
     CONN = getConn('textbooks_db')

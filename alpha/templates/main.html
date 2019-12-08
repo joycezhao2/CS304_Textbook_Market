@@ -38,16 +38,15 @@
                 <option value="111">111</option>
             </select>
         </p>
-        <!-- <p><label class="filter">Condition:</label>
-            <select id="cond" name="Condition">
-                    <option value="">choose</option>
-                    <option value="new">Brand New</option>
-                    <option value="new-">Like New</option>
-                    <option value="good+">Very Good</option>
-                    <option value="good">Good</option>
-                    <option value="acceptable">Acceptable</option>
+        <p><label for="sort">Sort by:</label>
+            <select id="sort" name="sorting">
+                <option value="">choose</option>
+                <option value="price up">Price low to high</option>
+                <option value="price down">Price high to low</option>
+                <option value="newest">Newest posted</option>
+                <option value="condition">By Condition</option>
             </select>
-        </p> -->
+        </p>
         <p>
             <input type="submit" name="filter" value="filter">
         </p>
@@ -57,7 +56,7 @@
     </form>
 </div>
 
-<div>
+<!-- <div>
     <form id="crieteria" method="POST" action="">
         <p><label for="sort">Sort by:</label>
             <select id="sort" name="sorting">
@@ -68,8 +67,11 @@
                 <option value="condition">By Condition</option>
             </select>
         </p>
+        <p>
+            <input type="submit" name="sort" value="sort">
+        </p>
     </form>
-</div>
+</div> -->
 
 <div>
     <table id="book-list">
@@ -78,30 +80,6 @@
             <th>Info</th>
             <th>Action</th>
         </tr>
-
-        <!-- {% for book in books %}
-            <tr data-book="{{book.bid}}">
-                <td class="pic">{{book.pic}}</td>
-                <td class="info">
-                    <ul>
-                        <li><label>Title: </label> {{book.title}}</li>
-                        <li><label>Price: </label>{{book.price}}</li>
-                        <li><label>Sold status: </label>
-                        {% if book.sold == 0 %}
-                            <label>Sold</label>
-                        {% else: %}
-                            <label>Available</label>
-                        {% endif %}
-                        </li>
-                    </ul>
-                </td>
-                <td>
-                    <p><input type="submit" name="submit" value="Book Information"></p>
-                    <p><input type="submit" name="submit" value="Seller Information"></p>
-                    <p><input type="submit" name="submit" value="Add to Cart"></p>
-                </td>
-            </tr> 
-        {% endfor %} -->
         {% for book in books %}
             <tr>
                 <td class="pic"></td>
@@ -125,5 +103,25 @@
         {% endfor %}
     </table>
 </div>
+
+<!-- <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.1/jquery.min.js"></script>
+<script>
+    
+    var progressive_on = false;
+    $('#progressive_enhancement').on('click',function() {
+        if (progressive_on) {
+            // turn off JavaScript
+            $('input[name=filter], input[type=submit]').show();
+            $('#progressive_enhancement').text('Turn on Progressive Enhancement');
+            progressive_on = false;
+        } else {
+            // turn on JavaScript
+            $('input[name=filter], input[type=submit]').hide();
+            $('#progressive_enhancement').text('Turn off Progressive Enhancement');
+            progressive_on = true;
+        }
+    })
+</script>
+<script src="{{url_for('static',filename='eventHandlers.js')}}"></script> -->
 
 {% endblock %}

@@ -6,27 +6,39 @@
 
 <p>This page is for uploading information of the textbook you want to sell.</p>
 
-<form method="post" action="{{url_for('submit')}}">
+<form method="post" action="{{url_for('submit')}}" enctype="multipart/form-data">
     <p><label>Book Title:
         <input required type="text" name="title" size="50"></label></p>
 
-    <p><label>Department:
-        <input required name="department" size="50"></label></p>
+    <p><label>Department:</label>
+        <select required id="dept" name="departments">
+            <option value="">choose</option>
+            {% for dept in depts %}
+                <option value={{dept[0]}}>{{dept[0]}}</option>
+            {% endfor %}
+        </select>
+    </p>
 
-    <p><label>Course number:
-        <input required name="number" size="20"></label></p> 
+    <p><label>Course number:</label>
+        <select id="nums" name="course_nums">
+            <option value="">choose</option>
+            {% for num in cnums %}
+                <option value={{num[0]}}>{{num[0]}}</option>
+            {% endfor %}
+        </select>
+    </p> 
         
     <p><label>Professor (First & Last Name):
-        <input required name="prof" size="50"></label></p>
+        <input name="prof" size="50"></label></p>
     
     <p><label>Condition:
         <select required name="condition">
             <option value="">choose</option>
-            <option value="new">Brand New</option>
-            <option value="new-">Like New</option>
-            <option value="good+">Very Good</option>
-            <option value="good">Good</option>
-            <option value="acceptable">Acceptable</option>
+            <option value="5">Brand New</option>
+            <option value="4">Like New</option>
+            <option value="3">Very Good</option>
+            <option value="2">Good</option>
+            <option value="1">Acceptable</option>
         </select>
     </label></p>
 
@@ -38,10 +50,10 @@
     </label></p>
 
     <!-- Plan to support file upload in Alpha version -->
-    <!-- <p><label>Picture (JPEG or PNG):
+    <p><label>Picture (JPEG or PNG):
         <input type="file" name="pic" accept="image/png, image/jpeg">
-    </label></p> -->
+    </label></p>
 
-    <p><input type="submit" value="Submit">
+    <p><input type="submit" value="upload">
 </form>
 {% endblock %}

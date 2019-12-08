@@ -1,11 +1,11 @@
 from flask import (Flask, render_template, make_response, url_for, request,
-                   redirect, flash, session, send_from_directory, jsonify
-                   )
+                   redirect, flash, session, send_from_directory, jsonify, Response)
 from werkzeug import secure_filename
 app = Flask(__name__)
 
-import random
+import sys, os, random
 import lookup
+import imghdr
 from flask_cas import CAS
 
 app.secret_key = 'your secret here'
@@ -25,6 +25,7 @@ app.config['CAS_LOGIN_ROUTE'] = '/module.php/casserver/cas.php/login'
 app.config['CAS_LOGOUT_ROUTE'] = '/module.php/casserver/cas.php/logout'
 app.config['CAS_VALIDATE_ROUTE'] = '/module.php/casserver/serviceValidate.php'
 app.config['CAS_AFTER_LOGIN'] = 'search'
+app.config['UPLOADS'] = 'pic'
 
 @app.route('/')
 def index():
@@ -63,14 +64,49 @@ def filterBook():
     else:
         return redirect(url_for('index'))
     
-    dept = request.form.get('dept')
-    course_num = request.form.get('num')
-    books = lookup.filterBook(dept,course_num)
-    return render_template('main.html',
-                            title='Hello',
-                            books=books,
-                            username=username)
+    try: 
+        dept = request.args.get('dept')
+        course_num = request.args.get('num')
+        order = request.args.get('sort')
 
+        books = lookup.filterBook(dept,course_num,order)
+        return render_template('main.html',
+                                title='Hello',
+                                books=books,
+                                username=username)
+    except Exception as err:
+        flash('form submission error' + str(err))
+        return redirect(url_for('index'))
+
+# @app.route('/filterBookAjax/', methods=['POST'])
+# def filterBookAjax():
+#     if 'CAS_USERNAME' in session:
+#         username = session['CAS_USERNAME']
+#     else:
+#         return redirect(url_for('index'))
+
+#     dept = request.form['dept']
+#     course_nums = request.form['nums']
+#     if len(course_nums) == 1:
+#         books = lookup.filterBook(dept,course_nums)
+#         try:
+#             return jsonify({'error':False, 
+#                             'dept':dept, 
+#                             'nums':course_nums,
+#                             'books':books})
+#         except Exception as err:
+#             print(err)
+#             return jsonify({'error':True, 'err':str(err)})
+#     else course_nums == 0:
+#         courses = lookup.getCourseNumbers(dept)
+#         # books = lookup.getDeptBooks(dept)
+#         try:
+#             return jsonify({'error':False,
+#                             'dept':dept,
+#                             'nums':courses)
+#         except Exception as err:
+#             print(err)
+#             return jsonify({'error':True, 'err':str(err)})
 
 ''' Route to handle uploading a book'''
 @app.route('/submit/', methods=['GET', 'POST'])
@@ -80,6 +116,9 @@ def submit():
     else:
         return redirect(url_for('index'))
 
+    departments = lookup.getAllDepts()
+    course_nums = lookup.getAllNums()
+
     if request.method == 'POST':
         title = request.form.get('title')
         dept = request.form.get('department')
@@ -88,14 +127,27 @@ def submit():
         price = request.form.get('price')
         condition = request.form.get('condition')
         description = request.form.get('description')
+        
+        # handling pictures
+        pic = request.files['pic']
+        user_filename = pic.filename
+        ext = user_filename.split('.')[-1]
+        filename = secure_filename('{}.{}'.format(title,ext))
+        pathname = os.path.join(app.config['UPLOADS'],filename)
+        pic.save(pathname)
 
         # insert into db
         lookup.uploadBook(dept, course_num, 
-                            prof, price, condition, title, description)
+                            prof, price, condition,
+                            title, description, filename)
 
         flash('Upload successful')
 
-    return render_template('submit.html', title='Upload', username=username)
+    return render_template('submit.html',
+                            title='Upload',
+                            username=username,
+                            depts=departments,
+                            cnums=course_nums)
 
 ''' Route to handle adding to your cart (session based)'''
 @app.route('/addCart/', methods=["POST"])
