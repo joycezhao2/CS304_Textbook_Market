@@ -3,7 +3,12 @@
 {% block main_content %}
 
 <h1>{{book['title']}}</h1>
-<p>By [Default author, to be implemented later]</p>
+
+<p>
+    <img src="{{url_for('pic', bid=book['id'])}} " alt="{{book['pic']}}">
+</p>
+
+<p>By {{book['author']}}</p>
 <p>Price: ${{book['price']}}</p>
 {% if book['sold_status'] == 0 %}
     <p>Status: Available</p>
