@@ -17,7 +17,7 @@ engine = InnoDB;
 create table courses (
     id int auto_increment NOT NULL primary key,
     department varchar(4),
-    number char(3),
+    number char(3)
 )
 engine = InnoDB;
 
