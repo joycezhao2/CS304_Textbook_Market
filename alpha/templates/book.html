@@ -12,9 +12,9 @@
 <p>By {{book['author']}}</p>
 <p>Price: ${{book['price']}}</p>
 {% if book['sold_status'] == 0 %}
-    <p><label>Status:</label><span id="sold_status">Available</span></p>
+    <p><label>Status:</label><span id="sold_status"> Available</span></p>
 {% else %}
-<p><label>Status:</label><span id="sold_status">Sold</span></p>
+<p><label>Status:</label><span id="sold_status"> Sold</span></p>
 {% endif %}
 <p>Condition: {{condition}}</p>
 <p>Seller: <a href="{{url_for('user', username=seller)}}">{{seller}}</a></p>
