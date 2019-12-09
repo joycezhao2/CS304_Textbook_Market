@@ -25,7 +25,6 @@ function updatem(obj){
     if(obj.error) {
         $('#errors').empty().html('Error:'+obj.err);
     } else {
-        console.log(updating books)
         $('#book-list').empty();
         $('#book-list').append('<tr><th>Info</th><th>Action</th></tr>');
         var books = obj.books;
