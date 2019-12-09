@@ -17,3 +17,7 @@ h1 {
 #soldStatus {
     display: inline;
 }
+
+body {
+    background-color: lightblue;
+}
