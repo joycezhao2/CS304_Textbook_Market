@@ -134,27 +134,30 @@ def getCourseNumbers(dept):
 def uploadBook(dept, course_num, price, condition, title, author, description, seller, filename):
     CONN = getConn('textbooks_db')
     curs = dbi.cursor(CONN)
+    success = 1
 
     # finds the course the book is for
     curs.execute('''select id from courses 
                     where department = %s
                     and number = %s''',
                     [dept, course_num])
-
     course_id = curs.fetchone()
-
-    # insert the book into the database
-    curs.execute('''insert into books(price, 
-                                        sold_status,
-                                        `condition`, 
-                                        title, 
-                                        author,
-                                        `description`,
-                                        seller,
-                                        course,
-                                        pic)
-                    values (%s,%s,%s,%s,%s,%s,%s,%s,%s)''',
-                    [price, 0, condition, title, author, description, seller, course_id, filename])
+    if course_id is None:
+        # if the user is trying to submit for an non-existing course
+        return course_id
+    else:
+        # insert the book into the database
+        curs.execute('''insert into books(price, 
+                                            sold_status,
+                                            `condition`, 
+                                            title, 
+                                            author,
+                                            `description`,
+                                            seller,
+                                            course,
+                                            pic)
+                        values (%s,%s,%s,%s,%s,%s,%s,%s,%s)''',
+                        [price, 0, condition, title, author, description, seller, course_id, filename])
 
 def findBook(book_id):
     CONN = getConn('textbooks_db')

@@ -64,8 +64,8 @@ def verify():
         lookup.createUser(name, username)
         return redirect(url_for('search'))
 
-''' Route to handle the search page. 
-    When there is no search term, show all the books for sale '''
+# Route to handle the search page. 
+# When there is no search term, show all the books for sale
 @app.route('/search/',  defaults={'term': ''})
 @app.route('/search/<term>', methods=["GET"])
 def search(term):
@@ -86,7 +86,7 @@ def search(term):
                             books=books,
                             username=username)
 
-''' Route to handle searching for a book'''
+# Route to handle searching for a book
 @app.route('/searchBook/', methods=["POST"])
 def searchBook():
     search_term = request.form.get("keyword")
@@ -141,7 +141,7 @@ def uploadBookAjax():
         print(err)
         return jsonify({'error':True, 'err':str(err)})
 
-''' Route to handle uploading a book'''
+# Route to handle uploading a book
 @app.route('/submit/', methods=['GET', 'POST'])
 def submit():
     if 'CAS_USERNAME' in session:
@@ -175,10 +175,13 @@ def submit():
         pic.save(pathname)
 
         # insert into db
-        lookup.uploadBook(dept, course_num, price, condition, title, author, 
-                            description, username, filename)
-
-        flash('Upload successful')
+        insert = lookup.uploadBook(dept, course_num, price, condition, title, author, 
+                                    description, username, filename)
+        if insert == 1:
+            flash('Upload successful')
+        else:
+            flash ("Course doesn't exist")
+            return redirect(request.referrer)
 
     return render_template('submit.html',
                             title='Upload',
