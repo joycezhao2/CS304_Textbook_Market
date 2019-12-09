@@ -30,55 +30,110 @@ def searchBook(search_term):
 
     return curs.fetchall()
 
-def filterBook(dept, order):
+def filterBook(dept, num, order):
     CONN = getConn('textbooks_db')
     curs = dbi.dictCursor(CONN)
 
     # finds the books with the criterias
     if order == '':
-        curs.execute('''select * from books
+        if num == 0:
+            curs.execute('''select * from books
                         where course in
                         (select id from courses
                         where department = %s)
                         and sold_status = 0''',
                         [dept])
-        return curs.fetchall()
+            return curs.fetchall()
+        else:
+            curs.execute('''select * from books
+                            where course in
+                            (select id from courses
+                            where department = %s
+                            and number = %s)
+                            and sold_status = 0''',
+                            [dept,num])
+            return curs.fetchall()
     elif order == "price up":
-        curs.execute('''select * from books
+        if num == 0:
+            curs.execute('''select * from books
                         where course in
                         (select id from courses
                         where department = %s)
                         and sold_status = 0
                         order by price asc''',
                         [dept])
-        return curs.fetchall()
+            return curs.fetchall()
+        else:
+            curs.execute('''select * from books
+                            where course in
+                            (select id from courses
+                            where department = %s
+                            and number = %s)
+                            and sold_status = 0
+                            order by price asc''',
+                            [dept,num])
+            return curs.fetchall()
     elif order == "price down":
-        curs.execute('''select * from books
+        if num == 0:
+            curs.execute('''select * from books
                         where course in
                         (select id from courses
                         where department = %s)
                         and sold_status = 0
                         order by price desc''',
                         [dept])
-        return curs.fetchall()
+            return curs.fetchall()
+        else:
+            curs.execute('''select * from books
+                            where course in
+                            (select id from courses
+                            where department = %s
+                            and number = %s)
+                            and sold_status = 0
+                            order by price desc''',
+                            [dept,num])
+            return curs.fetchall()
     elif order == "newest":
-        curs.execute('''select * from books
+        if num == 0:
+            curs.execute('''select * from books
                         where course in
                         (select id from courses
                         where department = %s)
                         and sold_status = 0
                         order by id desc''',
                         [dept])
-        return curs.fetchall()
+            return curs.fetchall()
+        else:
+            curs.execute('''select * from books
+                            where course in
+                            (select id from courses
+                            where department = %s
+                            and number = %s)
+                            and sold_status = 0
+                            order by id desc''',
+                            [dept,num])
+            return curs.fetchall()
     elif order == 'condition':
-        curs.execute('''select * from books
+        if num == 0:
+            curs.execute('''select * from books
                         where course in
                         (select id from courses
                         where department = %s)
                         and sold_status = 0
                         order by `condition` desc''',
                         [dept])
-        return curs.fetchall()
+            return curs.fetchall()
+        else:
+            curs.execute('''select * from books
+                            where course in
+                            (select id from courses
+                            where department = %s
+                            and number = %s)
+                            and sold_status = 0
+                            order by `condition` desc''',
+                            [dept,num])
+            return curs.fetchall()
+            
 
 def getAllDepts():
     CONN = getConn('textbooks_db')
@@ -142,10 +197,9 @@ def uploadBook(dept, course_num, price, condition, title, author, description, s
                     and number = %s''',
                     [dept, course_num])
     course_id = curs.fetchone()
-    print(len(course_id))
-    if len(course_id) == 0:
+    if course_id is None:
         # if the user is trying to submit for an non-existing course
-        return len(course_id)
+        return course_id
     else:
         # insert the book into the database
         curs.execute('''insert into books(price, 

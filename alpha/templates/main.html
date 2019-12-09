@@ -2,7 +2,7 @@
 
 {% block main_content %}
 <h1>Textbook Browser</h1>
-<p>Welcome to our draft! To try out the search, type terms such as 'Principles' or 'Classics' to see results.</p>
+<p>Welcome to our alpha version! To try out the search, type terms such as 'Principles' or 'Classics' to see results.</p>
 <div>
     <form class="search" method="POST" action="{{url_for('searchBook')}}">
         <p><label>Search:<input type="text" name="keyword" id="searchbox"></label>
@@ -13,7 +13,7 @@
 
 <div>
     <form method="GET" action="{{url_for('filter')}}">
-        <p><label class="filter">Department:</label>
+        <p><label>Department:</label>
             <select id="dept" name="department" required>
                 <option value="">choose</option>
                 {% for dept in depts %}
@@ -21,14 +21,14 @@
                 {% endfor %}
             </select>
         </p>
-        <!-- <p><label class="filter">Course Number:</label>
-            <select id="num" name="course_number">
+        <p id="cnum"><label >Course Number:</label>
+            <select id="num" name="course_number" required>
                 <option value="">choose</option>
                 {% for num in nums %}
                     <option value="{{num[0]}}">{{num[0]}}</option>
                 {% endfor %}
             </select>
-        </p> -->
+        </p>
         <p><label for="sort">Sort by:</label>
             <select id="sort" name="sorting">
                 <option value="">choose</option>
@@ -41,28 +41,12 @@
         <p>
             <input type="submit" value="filter">
         </p>
-        <!-- <p>This button turns on/off all the JavaScript:
-            <button id="progressive_enhancement"> Turn on Progressive Enhancement</button>
-        </p> -->
+        <p>This button turns on/off searching with course numbers:
+            <button id="progressive_enhancement"> Turn on Course number searching</button>
+        </p>
     </form>
 </div>
 
-<!-- <div>
-    <form id="crieteria" method="POST" action="">
-        <p><label for="sort">Sort by:</label>
-            <select id="sort" name="sorting">
-                <option value="">choose</option>
-                <option value="price up">Price low to high</option>
-                <option value="price down">Price high to low</option>
-                <option value="newest">Newest posted</option>
-                <option value="condition">By Condition</option>
-            </select>
-        </p>
-        <p>
-            <input type="submit" name="sort" value="sort">
-        </p>
-    </form>
-</div> -->
 
 <div>
     <table id="book-list">
@@ -92,5 +76,27 @@
         {% endfor %}
     </table>
 </div>
+
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+<script>
+    var progressive_on = true;
+    var URLm="{{url_for('filterBookAjax')}}";
+    $("#cnum").hide();
+
+    $("#progressive_enhancement").on('click', function () {
+    if(progressive_on) {
+        // turn it on
+        $("#cnum").show();
+        $("#progressive_enhancement").text('Turn off Course number searching');
+        progressive_on = false;
+    } else {
+        // turn it off
+        $("#cnum").hide();
+        $("#progressive_enhancement").text('Turn on Course number searching');
+        progressive_on = true;
+    }
+});
+</script>
+<script src="{{url_for('static',filename='eventHandlers.js')}}"></script>
 
 {% endblock %}

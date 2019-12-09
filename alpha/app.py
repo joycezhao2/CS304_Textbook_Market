@@ -101,9 +101,10 @@ def filter():
     
     try: 
         dept = request.args.get('department')
+        num = request.args.get('course_number')
         order = request.args.get('sorting')
 
-        books = lookup.filterBook(dept, order)
+        books = lookup.filterBook(dept, num, order)
 
         deptSold = lookup.getSellingDepts()
         numberSold = lookup.getSellingNums()
@@ -121,8 +122,41 @@ def filter():
 @app.route('/filterBook/', methods=["POST"])
 def filterBook():
     dept = request.form.get('department')
+    num = request.form.get('course_number')
     order = request.form.get('sorting')
-    return redirect(url_for('filter', dept=dept, order=''))
+    return redirect(url_for('filter', dept=dept, num=num, order=''))
+
+@app.route('/filterBookAjax/',methods=["POST"])
+def filterBookAjax():
+    if 'CAS_USERNAME' in session:
+        username = session['CAS_USERNAME']
+    else:
+        return redirect(url_for('index'))
+    print(request.form)
+
+    dept = request.form['dept']
+    sort = request.form['sort']
+
+    if dept:
+        session['dept'] = dept
+        session['sort'] = sort
+    else:
+        session['sort'] = sort
+        deptSaved = session['dept']
+        dept = deptSaved
+    
+    num = 0
+    books = lookup.filterBook(dept,num,sort)
+    print(books)
+
+    try:
+        return jsonify({'error':False,
+                        'dept':dept,
+                        'sort':sort,
+                        'books':books})
+    except Exception as err:
+        print(err)
+        return jsonify({'error':True, 'err':str(err)})
 
 @app.route('/uploadBookAjax/', methods=['POST'])
 def uploadBookAjax():

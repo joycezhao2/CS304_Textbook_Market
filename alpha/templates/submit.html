@@ -6,8 +6,8 @@
 
 <p>This page is for uploading information of the textbook you want to sell.</p>
 
-<p>This button turns on/off all the JavaScript:
-    <button id="progressive_enhancement"> Turn on Progressive Enhancement</button></p>
+<!-- <p>This button turns on/off all the JavaScript:
+    <button id="progressive_enhancement"> Turn on Progressive Enhancement</button></p> -->
 
 <form method="post" action="{{url_for('submit')}}" enctype="multipart/form-data">
     <p><label>Book Title:
@@ -63,20 +63,8 @@
 
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
 <script>
+    var progressive_on = true;
     var URL="{{url_for('uploadBookAjax')}}";
-    var progressive_on = false;
-
-    $('#progressive_enhancement').on('click',function() {
-        if (progressive_on) {
-            // turn off JavaScript
-            $('#progressive_enhancement').text('Turn on Progressive Enhancement');
-            progressive_on = false;
-        } else {
-            // turn on JavaScript
-            $('#progressive_enhancement').text('Turn off Progressive Enhancement');
-            progressive_on = true;
-        }
-    })
 </script>
 <script src="{{url_for('static',filename='eventHandlers.js')}}"></script>
 {% endblock %}
