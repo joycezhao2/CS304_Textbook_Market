@@ -24,7 +24,6 @@ h1 {
     display: inline;
 }
 
-<<<<<<< HEAD
 .column {
     float: left;
     width: 40%;
@@ -39,12 +38,4 @@ h1 {
     content: "";
     display: table;
     clear: both;
-=======
-body {
-    background-color: lightblue;
-}
-
-.navBar {
-    margin-right: 10px;
->>>>>>> 7957a7b5b49f1e1c0756f94228fd919daa514c47
 }
