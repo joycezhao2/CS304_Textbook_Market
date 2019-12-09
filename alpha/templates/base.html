@@ -14,7 +14,7 @@
     <a href="{{url_for('index')}}">Search</a>
     <a href="{{url_for('submit')}}">Sell</a>
     <a href="{{url_for('session_cart')}}">Your Cart</a>
-    <a href="{{url_for('user', username='jzhao2')}}">Your Profile</a>
+    <a href="{{url_for('user', username=username)}}">Your Profile</a>
 
     <!-- route defined by CAS -->
     <form method="GET" action="/logout/"><button>logout</button></form>
