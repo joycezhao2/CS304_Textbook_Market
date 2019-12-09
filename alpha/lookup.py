@@ -142,7 +142,7 @@ def uploadBook(dept, course_num, price, condition, title, author, description, s
                     and number = %s''',
                     [dept, course_num])
     course_id = curs.fetchone()
-    print(len(course_id))
+
     if len(course_id) == 0:
         # if the user is trying to submit for an non-existing course
         return len(course_id)

@@ -12,9 +12,9 @@
             {% if loggedInUser == username %}    
 
             {% if book['sold_status'] == 1 %}
-                <span><input type="checkbox" name="markAsSold" value="soldStatus" checked> Mark as Sold <br>
+                <span><input type="checkbox" name="markAsSold" value="{{book['id']}}" checked> Mark as Sold <br>
                 {% else %}
-                <span><input type="checkbox" name="markAsSold" value="soldStatus"> Mark as Sold <br>
+                <span><input type="checkbox" name="markAsSold" value="{{book['id']}}"> Mark as Sold <br>
                 {% endif %}              
             {% endif %}            
             </span>
