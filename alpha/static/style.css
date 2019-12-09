@@ -1,5 +1,11 @@
 /* For flashed messages; make them stand out using red and italics */
 
+body {
+    background-color: rgb(209, 241, 252);
+    margin: auto;
+    text-align: center;
+}
+
 #messages {
     color: red;
     font-style: italic;
@@ -18,6 +24,18 @@ h1 {
     display: inline;
 }
 
-body {
-    background-color: lightblue;
+.column {
+    float: left;
+    width: 40%;
+    text-align: left;
+}
+.column2 {
+    float: left;
+    width: 60%;
+    text-align: left;
+}
+.row:after {
+    content: "";
+    display: table;
+    clear: both;
 }
