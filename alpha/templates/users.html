@@ -9,13 +9,16 @@
     {% for book in selling %}
         <li>
             <a href="{{url_for('book', id=book['id'])}}">{{book['title']}}</a>
-            {% if loggedInUser == username %}    
-
-            {% if book['sold_status'] == 1 %}
-                <span><input type="checkbox" name="markAsSold" value="soldStatus" checked> Mark as Sold <br>
-                {% else %}
-                <span><input type="checkbox" name="markAsSold" value="soldStatus"> Mark as Sold <br>
-                {% endif %}              
+            {% if loggedInUser == username %} 
+                <span>
+                    <form id="soldStatus"> 
+                        {% if book['sold_status'] == 1 %}
+                            <input type="checkbox" name="markAsSold" value="{{book['id']}}" checked> Mark as Sold <br>
+                            {% else %}
+                            <input type="checkbox" name="markAsSold" value="{{book['id']}}"> Mark as Sold <br>
+                        {% endif %}  
+                    </form> 
+                </span>
             {% endif %}            
             </span>
         </li>

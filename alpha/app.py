@@ -84,7 +84,7 @@ def search(term):
                             depts=deptSold,
                             nums=numberSold,
                             books=books,
-                            username=username)
+                            loggedInUser=username)
 
 # Route to handle searching for a book
 @app.route('/searchBook/', methods=["POST"])
@@ -111,10 +111,10 @@ def filter():
 
         return render_template('main.html',
                                 title='Hello',
+                                loggedInUser=username,
                                 depts=deptSold,
                                 nums=numberSold,
-                                books=books,
-                                username=username)
+                                books=books)
     except Exception as err:
         flash('form submission error' + str(err))
         return redirect(url_for('index'))
@@ -200,13 +200,14 @@ def submit():
 
         if pic.filename == '': 
             filename = secure_filename('default.png')
+            pathname = os.path.join(app.config['UPLOADS'],filename)
         else: 
             user_filename = pic.filename
             ext = user_filename.split('.')[-1]
             filename = secure_filename('{}-{}.{}'.format(username,title,ext))
 
-        pathname = os.path.join(app.config['UPLOADS'],filename)
-        pic.save(pathname)
+            pathname = os.path.join(app.config['UPLOADS'],filename)
+            pic.save(pathname)
 
         # insert into db
         insert = lookup.uploadBook(dept, course_num, price, condition, title, author, 
@@ -219,11 +220,12 @@ def submit():
 
     return render_template('submit.html',
                             title='Upload',
+                            loggedInUser=username,
                             username=username,
                             depts=departments,
                             cnums=course_nums)
 
-@app.route('/pic/<bid>')
+@app.route('/pic/<bid>/')
 def pic(bid):
     filename = lookup.getPic(bid)   
     return send_from_directory(app.config['UPLOADS'],filename[0])
@@ -255,6 +257,7 @@ def session_cart():
         
         return render_template('cart.html', 
                                 title='Cart',
+                                loggedInUser=username,
                                 cart=book_info,
                                 username=username)
 
@@ -293,12 +296,12 @@ def book(id):
 
     return render_template('book.html', 
                             title='Book',
+                            loggedInUser=username,
                             book=book, 
                             course=related_course,
                             condition=condition,
                             seller=book['seller'],
-                            email=book['seller']+'@wellesley.edu',
-                            username=username)
+                            email=book['seller']+'@wellesley.edu')
 
 ''' Route to display a user '''
 @app.route('/users/<username>/')

@@ -74,8 +74,7 @@ function update(obj) {
 }
 
 $("input[type=checkbox]").on('change', function() {
-    bid = $('[name=bookid').val();
-    
+    bid = $(this).val();
     if (this.checked) {
         sendSoldStatus(1,bid);
     } else {
@@ -94,7 +93,6 @@ function addToPage(json_data){
         $("#sold_status").text("Available");
     }
     else {
-        console.log($('#sold_status').val())
         $("#sold_status").text("Sold");
     }
 }
