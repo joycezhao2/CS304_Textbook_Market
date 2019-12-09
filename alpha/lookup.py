@@ -2,8 +2,8 @@ import dbi
 
 '''Returns a database connection for that db'''
 def getConn(db):
-    dsn = dbi.read_cnf("~/.textbook.cnf")
-    # dsn = dbi.read_cnf()
+    # dsn = dbi.read_cnf("~/.textbook.cnf")
+    dsn = dbi.read_cnf()
     conn = dbi.connect(dsn)
     dbi.select_db(conn,db)
     return conn
@@ -26,7 +26,7 @@ def searchBook(search_term):
     curs.execute('''select * from books 
                     where title like %s
                     and sold_status = 0''',
-            ['%'+search_term+'%'])
+                ['%'+search_term+'%'])
 
     return curs.fetchall()
 
@@ -142,9 +142,10 @@ def uploadBook(dept, course_num, price, condition, title, author, description, s
                     and number = %s''',
                     [dept, course_num])
     course_id = curs.fetchone()
-    if course_id is None:
+    print(len(course_id))
+    if len(course_id) == 0:
         # if the user is trying to submit for an non-existing course
-        return course_id
+        return len(course_id)
     else:
         # insert the book into the database
         curs.execute('''insert into books(price, 
@@ -158,6 +159,7 @@ def uploadBook(dept, course_num, price, condition, title, author, description, s
                                             pic)
                         values (%s,%s,%s,%s,%s,%s,%s,%s,%s)''',
                         [price, 0, condition, title, author, description, seller, course_id, filename])
+        return 1
 
 def findBook(book_id):
     CONN = getConn('textbooks_db')
