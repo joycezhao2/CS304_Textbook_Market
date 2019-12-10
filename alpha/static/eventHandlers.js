@@ -20,6 +20,7 @@ $('select[name="sorting"]').change(function() {
     }
 })
 
+// getting the list of books according to the criterias and update the books listed
 function updatem(obj){
     console.log(obj)
     if(obj.error) {
@@ -72,6 +73,7 @@ function update(obj) {
     }
 }
 
+// dynamically changes the "mark as sold" checkbox
 $("input[type=checkbox]").on('change', function() {
     bid = $(this).val();
     if (this.checked) {
