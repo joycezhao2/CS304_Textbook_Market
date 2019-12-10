@@ -2,33 +2,31 @@
 
 {% block main_content %}
 
-<h1>{{name}}</h1>
+<div class="page_header">
+    <h1>{{name}}</h1>
+</div>
 
     <h4>Selling: </h4>
-    <ul>
     {% for book in selling %}
-        <li>
-            <a href="{{url_for('book', id=book['id'])}}">{{book['title']}}</a>
-            {% if loggedInUser == username %} 
-                <span>
-                    <form id="soldStatus"> 
-                        {% if book['sold_status'] == 1 %}
-                            <input type="checkbox" name="markAsSold" value="{{book['id']}}" checked> Mark as Sold <br>
-                            {% else %}
-                            <input type="checkbox" name="markAsSold" value="{{book['id']}}"> Mark as Sold <br>
-                        {% endif %}  
-                    </form> 
-                </span>
-            {% endif %}            
+        <a href="{{url_for('book', id=book['id'])}}">{{book['title']}}</a>
+        {% if loggedInUser == username %} 
+            <span>
+                <form id="soldStatus"> 
+                    {% if book['sold_status'] == 1 %}
+                        <input type="checkbox" name="markAsSold" value="{{book['id']}}" checked> Mark as Sold <br>
+                        {% else %}
+                        <input type="checkbox" name="markAsSold" value="{{book['id']}}"> Mark as Sold <br>
+                    {% endif %}  
+                </form> 
             </span>
-        </li>
+        {% endif %}            
+        </span>
     {% endfor %}
-    </ul> 
 
 {% if loggedInUser != username %}    
     <h4>Contact Me</h4>
     <form method="POST" action="/send_mail/">
-    <table>
+    <table id="contact">
         <p> Recipient: {{username+'@wellesley.edu'}} </p>
         <tr><td><label for="subject">Subject:</td>
             <td><input type="text" id="subject" name="subject" size="50"></td></tr>

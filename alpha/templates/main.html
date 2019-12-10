@@ -1,13 +1,16 @@
 {% extends "base.html" %}
 
 {% block main_content %}
-<h1>Textbook Browser</h1>
-<p>Welcome to our alpha version! To try out the search, type terms such as 'Principles' or 'Classics' to see results.</p>
+<div class="page_header">
+    <h1>Textbook Browser</h1>
+    <p class="page_description">Welcome to our alpha version!</p>
+    <p class="page_description">To try out the search, type terms such as 'Principles' or 'Classics' to see results.</p>
+</div>
 
 <div class='row'>
     <div class='column'>
         <form class="search" method="POST" action="{{url_for('searchBook')}}">
-                <p><label>Search:<input type="text" name="keyword" id="searchbox"></label>
+                <p><label>Search: <input type="text" name="keyword" id="searchbox"></label>
                     <input type="submit" value="search" id="submit">
                 </p>
         </form>
@@ -48,15 +51,16 @@
 
     <div class='column2'>
         <table id="book-list">
-            <tr>
+            <tr id="titles">
                 <th>Info</th>
                 <th>Action</th>
             </tr>
             {% for book in books %}
                 <tr>
                     <td class="info">
+                        <a href="{{url_for('book', id=book['id'])}}">{{book['title']}}</a>
+                        
                         <ul>
-                            <li><a href="{{url_for('book', id=book['id'])}}">{{book['title']}}</a></li>
                             <li><label>Price: $</label>{{book['price']}}</li>
                             <li><label>Sold status: </label> Available</li>
                         </ul>
