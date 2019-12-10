@@ -2,6 +2,8 @@ import dbi
 
 # Returns a database connection for that db
 def getConn(db):
+    # this line is to allow db connection on a personal account
+    # dsn = dbi.read_cnf("~/.textbook.cnf")
     dsn = dbi.read_cnf()
     conn = dbi.connect(dsn)
     dbi.select_db(conn,db)
