@@ -9,7 +9,8 @@ create table users (
     username varchar(20) NOT NULL primary key,
     name varchar(50),
     email varchar(100),
-    phnum varchar(10)
+    pic varchar(50),
+    bio varchar(500),
 )
 engine = InnoDB;
 
