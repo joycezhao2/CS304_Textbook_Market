@@ -1,0 +1,1380 @@
+====================== app.py =====================
+from flask import (Flask, render_template, make_response, url_for, request,
+                   redirect, flash, session, send_from_directory, jsonify, Response)
+from werkzeug import secure_filename
+app = Flask(__name__)
+
+import sys, os, random
+import lookup
+import imghdr
+from flask_cas import CAS
+
+from flask_mail import Mail, Message
+
+app.config.update(
+    DEBUG=True,
+    # EMAIL SETTINGS
+    MAIL_SERVER='localhost',    # default; works on Tempest
+    MAIL_PORT=25,               # default
+    MAIL_USE_SSL=False,         # default
+    MAIL_USERNAME='textbookmarket@wellesley.edu'
+)
+mail = Mail(app)
+
+app.secret_key = 'your secret here'
+# replace that with a random key
+app.secret_key = ''.join([ random.choice(('ABCDEFGHIJKLMNOPQRSTUVXYZ' +
+                                          'abcdefghijklmnopqrstuvxyz' +
+                                          '0123456789'))
+                           for i in range(20) ])
+
+# This gets us better error messages for certain common request errors
+app.config['TRAP_BAD_REQUEST_ERRORS'] = True
+
+CAS(app)
+
+app.config['CAS_SERVER'] = 'https://login.wellesley.edu:443'
+app.config['CAS_LOGIN_ROUTE'] = '/module.php/casserver/cas.php/login'
+app.config['CAS_LOGOUT_ROUTE'] = '/module.php/casserver/cas.php/logout'
+app.config['CAS_VALIDATE_ROUTE'] = '/module.php/casserver/serviceValidate.php'
+app.config['CAS_AFTER_LOGIN'] = 'verify'
+app.config['UPLOADS'] = 'pic'
+
+# The default main page
+@app.route('/')
+def index():
+    if 'CAS_USERNAME' in session:
+        username = session['CAS_USERNAME']
+        return redirect(url_for('search'))
+    return render_template('login.html')
+
+# Route that checks if log-in information is correct
+@app.route('/verify/', methods=["GET", "POST"])
+def verify():
+    username = session['CAS_USERNAME']
+    user = lookup.searchUser(username)
+    
+    if request.method == 'GET':
+        # if they've created an account before
+        if user:
+            return redirect(url_for('search'))
+
+        # otherwise have them make an account
+        return render_template('account.html')
+    
+    elif request.method == 'POST':
+        name = request.form.get('name')
+        lookup.createUser(name, username)
+        return redirect(url_for('search'))
+
+# Route to handle the search page. 
+# When there is no search term, show all the books for sale
+@app.route('/search/',  defaults={'term': ''})
+@app.route('/search/<term>', methods=["GET"])
+def search(term):
+    if 'CAS_USERNAME' in session:
+        username = session['CAS_USERNAME']
+    else:
+        return redirect(url_for('index'))
+
+    books = lookup.searchBook(term)
+
+    deptSold = lookup.getSellingDepts()
+    numberSold = lookup.getSellingNums()
+
+    return render_template('main.html',
+                            title='Hello',
+                            depts=deptSold,
+                            nums=numberSold,
+                            books=books,
+                            loggedInUser=username)
+
+# Route to handle searching with a user input
+@app.route('/searchBook/', methods=["POST"])
+def searchBook():
+    search_term = request.form.get("keyword")
+    return redirect(url_for('index', term=search_term))
+
+# Route to handle filtering with selected criterias (department, course number, sorting order)
+@app.route('/filter/', methods=["GET"])
+def filter():
+    if 'CAS_USERNAME' in session:
+        username = session['CAS_USERNAME']
+    else:
+        return redirect(url_for('index'))
+    
+    try: 
+        dept = request.args.get('department')
+        num = request.args.get('course_number')
+        order = request.args.get('sorting')
+
+        books = lookup.filterBook(dept, num, order)
+        
+        deptSold = lookup.getSellingDepts()
+        numberSold = lookup.getSellingNums()
+
+        return render_template('main.html',
+                                title='Hello',
+                                loggedInUser=username,
+                                depts=deptSold,
+                                nums=numberSold,
+                                books=books)
+    except Exception as err:
+        flash('form submission error' + str(err))
+        return redirect(url_for('index'))
+
+# Route directing to the 'filter' route for searching
+@app.route('/filterBook/', methods=["POST"])
+def filterBook():
+    dept = request.form.get('department')
+    num = request.form.get('course_number')
+    order = request.form.get('sorting')
+    return redirect(url_for('filter', dept=dept, num=num, order=''))
+
+# Route handling ajax version of filtering books with criterias (department and sorting order)
+@app.route('/filterBookAjax/',methods=["POST"])
+def filterBookAjax():
+    if 'CAS_USERNAME' in session:
+        username = session['CAS_USERNAME']
+    else:
+        return redirect(url_for('index'))
+    print(request.form)
+
+    dept = request.form['dept']
+    sort = request.form['sort']
+
+    if dept:
+        session['dept'] = dept
+        session['sort'] = sort
+    else:
+        session['sort'] = sort
+        deptSaved = session['dept']
+        dept = deptSaved
+    
+    # Haven't implemented auto updates in course number drop-down list
+    # will be handled in beta version
+    num = 0
+
+    books = lookup.filterBook(dept,num,sort)
+
+    try:
+        return jsonify({'error':False, 'dept':dept, 'sort':sort,'books':books})
+    except Exception as err:
+        print(err)
+        return jsonify({'error':True, 'err':str(err)})
+
+# Route handling submission page where available course number will show up given a selected department
+@app.route('/uploadBookAjax/', methods=['POST'])
+def uploadBookAjax():
+    if 'CAS_USERNAME' in session:
+        username = session['CAS_USERNAME']
+    else:
+        return redirect(url_for('index'))
+
+    dept = request.form['dept']
+    courses = lookup.getCourseNumbers(dept)
+    try:
+        return jsonify({'error':False, 
+                        'dept':dept, 
+                        'nums':courses})
+    except Exception as err:
+        print(err)
+        return jsonify({'error':True, 'err':str(err)})
+
+# Route to handle uploading a book into the database
+@app.route('/submit/', methods=['GET', 'POST'])
+def submit():
+    if 'CAS_USERNAME' in session:
+        username = session['CAS_USERNAME']
+    else:
+        return redirect(url_for('index'))
+
+    departments = lookup.getAllDepts()
+    course_nums = lookup.getAllNums()
+
+    if request.method == 'POST':
+        title = request.form.get('title')
+        author = request.form.get('author')
+        dept = request.form.get('departments')
+        course_num = request.form.get('course_nums')
+        price = request.form.get('price')
+        condition = request.form.get('condition')
+        description = request.form.get('description')
+
+        # handling pictures
+        pic = request.files['pic']
+        if pic.filename == '': 
+            filename = secure_filename('default.png')
+            pathname = os.path.join(app.config['UPLOADS'],filename)
+        else: 
+            user_filename = pic.filename
+            ext = user_filename.split('.')[-1]
+            filename = secure_filename('{}-{}.{}'.format(username,title,ext))
+            pathname = os.path.join(app.config['UPLOADS'],filename)
+            pic.save(pathname)
+
+        # insert into db
+        insert = lookup.uploadBook(dept, course_num, price, condition, title, author, 
+                                    description, username, filename)
+        if insert == 1:
+            flash('Upload successful')
+        else:
+            flash ("Course doesn't exist")
+            return redirect(request.referrer)
+
+    return render_template('submit.html',
+                            title='Upload',
+                            loggedInUser=username,
+                            username=username,
+                            depts=departments,
+                            cnums=course_nums)
+
+# Route handling picture
+@app.route('/pic/<bid>/')
+def pic(bid):
+    filename = lookup.getPic(bid)   
+    return send_from_directory(app.config['UPLOADS'],filename[0])
+
+# Route handling adding to your cart (session based)
+@app.route('/addCart/', methods=["POST"])
+def addCart():
+    cart = session.get('cart', {}) 
+    book = request.form.get('bookid')
+
+    # use dict to prevent repitition of same book
+    cart[book] = 1
+    session['cart'] = cart
+    flash('Book added to cart successfully')
+    return redirect(request.referrer)
+
+# Route handling showing your cart and deleting from it
+@app.route('/session/cart/', methods=['GET','POST'])
+def session_cart():
+    if 'CAS_USERNAME' in session:
+        username = session['CAS_USERNAME']
+    else:
+        return redirect(url_for('index'))
+
+    cart = session.get('cart',{}) 
+    
+    if request.method == 'GET':
+        book_info = [lookup.findBook(book_id) for book_id in cart.keys()]        
+        return render_template('cart.html', 
+                                title='Cart',
+                                loggedInUser=username,
+                                cart=book_info,
+                                username=username)
+    elif request.method == 'POST':
+        # removing from cart
+        item = request.form.get('bookid')
+        cart.pop(item)
+        session['cart'] = cart
+        return redirect(url_for('session_cart'))
+
+# Route to display a book
+@app.route('/book/<id>/')
+def book(id):
+    if 'CAS_USERNAME' in session:
+        username = session['CAS_USERNAME']
+    else:
+        return redirect(url_for('index'))
+
+    book = lookup.findBook(id) 
+
+    c = book['condition']
+    condition =''
+    if c == '5':
+        condition = 'Brand New' 
+    elif c == '4':
+        condition = 'Like New' 
+    elif c == '3':
+        condition = 'Very Good'
+    elif c == '2':
+        condition = 'Good'  
+    elif c == '1':
+        condition = 'Acceptable'
+
+    course_id = book['course']
+    related_course = lookup.getCourseByID(course_id)
+
+    return render_template('book.html', 
+                            title='Book',
+                            loggedInUser=username,
+                            book=book, 
+                            course=related_course,
+                            condition=condition,
+                            seller=book['seller'],
+                            email=book['seller']+'@wellesley.edu')
+
+# Route to display a user
+@app.route('/users/<username>/')
+def user(username):
+    if 'CAS_USERNAME' in session:
+        loggedInUser = session['CAS_USERNAME']
+    else:
+        return redirect(url_for('index'))
+
+    selling = lookup.findBooksBySeller(username)
+    user = lookup.searchUser(username)
+
+    return render_template('users.html', 
+                            title='User',
+                            name=user['name'], 
+                            selling=selling,
+                            username=username,
+                            loggedInUser=loggedInUser)  
+
+# Route to send an email to a user
+@app.route('/send_mail/', methods=["GET", "POST"])
+def send_mail():
+    if request.method == 'GET':
+        return redirect(request.referrer)
+    else:
+        try:
+             # throw error if there's trouble
+            sender = session['CAS_USERNAME'] + "@wellesley.edu"
+            recipient = request.form.get("userEmail")
+            subject = request.form['subject']
+            body = request.form['body']
+            msg = Message(subject=subject, sender=sender, recipients=[recipient], body=body)
+            mail.send(msg)
+            flash('email sent successfully')
+            return redirect(request.referrer)
+        except Exception as err:
+            print(['err',err])
+            flash('form submission error'+str(err))
+            return redirect(request.referrer)
+
+# Route handling the buttons displayed on the search page '''
+@app.route('/bookreq/', methods=["POST"])
+def bookreq():
+    submit = request.form.get("submit")
+    if submit == "Book Information":
+        bid = request.form.get("bookid")
+        return redirect(url_for('book',id=bid))
+    elif submit == "Seller Information":
+        uid = request.form.get("uid")
+        return redirect(url_for('user', username=uid))
+    elif submit == "Add to Cart":
+        return redirect(url_for('addCart'),  code=307)
+    else:
+        return redirect("/")
+
+# Route handling "mark as sold" checkbox with ajax
+@app.route('/update_sold_status_ajax/', methods=["POST"])
+def updateSoldStatusAjax():
+    bid = request.form.get('id')
+    status = request.form['sold_status']
+    status = lookup.setSoldStatus(bid,status)
+    return jsonify({'sold_status': status})
+
+if __name__ == '__main__':
+    import sys, os
+    if len(sys.argv) > 1:
+        # arg, if any, is the desired port number
+        port = int(sys.argv[1])
+        assert(port>1024)
+    else:
+        port = os.getuid()
+    app.debug = True
+    app.run('0.0.0.0',port)
+
+====================== lookup.py =====================
+import dbi
+
+# Returns a database connection for that db
+def getConn(db):
+    # this line is to allow db connection on a personal account
+    # dsn = dbi.read_cnf("~/.textbook.cnf")
+    dsn = dbi.read_cnf()
+    conn = dbi.connect(dsn)
+    dbi.select_db(conn,db)
+    return conn
+
+# Returns the picture attached to a specified book
+def getPic(bid):
+    CONN = getConn('textbooks_db')
+    curs = dbi.cursor(CONN)
+
+    numrows = curs.execute(
+        '''select pic from books where id = %s''',
+        [bid])
+    filename = curs.fetchone()
+    return filename
+
+# Returns all books with a search term
+def searchBook(search_term):
+    CONN = getConn('textbooks_db')
+    curs = dbi.dictCursor(CONN)
+
+    curs.execute('''select * from books 
+                    where title like %s
+                    and sold_status = 0''',
+                ['%'+search_term+'%'])
+    return curs.fetchall()
+
+# Returns the books with given criterias (department, course number, sorting order)
+def filterBook(dept, num, order):
+    CONN = getConn('textbooks_db')
+    curs = dbi.dictCursor(CONN)
+
+    # num == 0 handles the ajax version
+    if order == '':
+        if num == 0:
+            curs.execute('''select * from books
+                        where course in
+                        (select id from courses
+                        where department = %s)
+                        and sold_status = 0''',
+                        [dept])
+            return curs.fetchall()
+        else:
+            curs.execute('''select * from books
+                            where course in
+                            (select id from courses
+                            where department = %s
+                            and number = %s)
+                            and sold_status = 0''',
+                            [dept,num])
+            return curs.fetchall()
+    elif order == "price up":
+        if num == 0:
+            curs.execute('''select * from books
+                        where course in
+                        (select id from courses
+                        where department = %s)
+                        and sold_status = 0
+                        order by price asc''',
+                        [dept])
+            return curs.fetchall()
+        else:
+            curs.execute('''select * from books
+                            where course in
+                            (select id from courses
+                            where department = %s
+                            and number = %s)
+                            and sold_status = 0
+                            order by price asc''',
+                            [dept,num])
+            return curs.fetchall()
+    elif order == "price down":
+        if num == 0:
+            curs.execute('''select * from books
+                        where course in
+                        (select id from courses
+                        where department = %s)
+                        and sold_status = 0
+                        order by price desc''',
+                        [dept])
+            return curs.fetchall()
+        else:
+            curs.execute('''select * from books
+                            where course in
+                            (select id from courses
+                            where department = %s
+                            and number = %s)
+                            and sold_status = 0
+                            order by price desc''',
+                            [dept,num])
+            return curs.fetchall()
+    elif order == "newest":
+        if num == 0:
+            curs.execute('''select * from books
+                        where course in
+                        (select id from courses
+                        where department = %s)
+                        and sold_status = 0
+                        order by id desc''',
+                        [dept])
+            return curs.fetchall()
+        else:
+            curs.execute('''select * from books
+                            where course in
+                            (select id from courses
+                            where department = %s
+                            and number = %s)
+                            and sold_status = 0
+                            order by id desc''',
+                            [dept,num])
+            return curs.fetchall()
+    elif order == 'condition':
+        if num == 0:
+            curs.execute('''select * from books
+                        where course in
+                        (select id from courses
+                        where department = %s)
+                        and sold_status = 0
+                        order by `condition` desc''',
+                        [dept])
+            return curs.fetchall()
+        else:
+            curs.execute('''select * from books
+                            where course in
+                            (select id from courses
+                            where department = %s
+                            and number = %s)
+                            and sold_status = 0
+                            order by `condition` desc''',
+                            [dept,num])
+            return curs.fetchall()
+            
+# Returns all existing departments in the database
+def getAllDepts():
+    CONN = getConn('textbooks_db')
+    curs = dbi.cursor(CONN)
+
+    curs.execute('''select distinct department from courses''')
+    return curs.fetchall()
+
+# Returns all existing course number in the database
+def getAllNums():
+    CONN = getConn('textbooks_db')
+    curs = dbi.cursor(CONN)
+
+    curs.execute('''select distinct number from courses 
+                    order by number asc''')
+    return curs.fetchall()
+
+# Returns all existing departments that some user is selling a book for
+def getSellingDepts():
+    CONN = getConn('textbooks_db')
+    curs = dbi.cursor(CONN)
+
+    curs.execute('''select distinct department
+                    from courses
+                    inner join books
+                    where (courses.id = books.course)
+                    and books.sold_status = 0''')
+    return curs.fetchall()
+
+# Returns all existing course numbers that some user is selling a book for
+def getSellingNums():
+    CONN = getConn('textbooks_db')
+    curs = dbi.cursor(CONN)
+
+    curs.execute('''select distinct number
+                    from courses
+                    inner join books
+                    where (courses.id = books.course)
+                    and books.sold_status = 0''')
+    return curs.fetchall()
+
+# Returns all course numbers associated with a given department
+def getCourseNumbers(dept):
+    CONN = getConn('textbooks_db')
+    curs = dbi.cursor(CONN)
+
+    curs.execute('''select distinct number from courses
+                    where department = %s''',
+                    [dept])
+    return curs.fetchall()
+
+# Executes the upload of a book, returns whether insertion is successful 
+def uploadBook(dept, course_num, price, condition, title, author, description, seller, filename):
+    CONN = getConn('textbooks_db')
+    curs = dbi.cursor(CONN)
+    success = 1
+
+    # finds the course the book is for
+    curs.execute('''select id from courses 
+                    where department = %s
+                    and number = %s''',
+                    [dept, course_num])
+    course_id = curs.fetchone()
+    if course_id is None:
+        # if the user is trying to submit for an non-existing course
+        return course_id
+    else:
+        # insert the book into the database
+        curs.execute('''insert into books(price, sold_status,`condition`, title, author,
+                                        `description`,seller,course,pic)
+                        values (%s,%s,%s,%s,%s,%s,%s,%s,%s)''',
+                        [price, 0, condition, title, author, description, seller, course_id, filename])
+        return 1
+
+# Returns all information of a specific book
+def findBook(book_id):
+    CONN = getConn('textbooks_db')
+    curs = dbi.dictCursor(CONN)
+
+    curs.execute('''select * from books where id=%s''',
+            [book_id])
+    return curs.fetchone()
+
+# Creates a new user in the database
+def createUser(name, username):
+    CONN = getConn('textbooks_db')
+    curs = dbi.dictCursor(CONN)
+
+    curs.execute('''insert into users(username, name, email, phnum)
+                    values(%s, %s, %s, %s)''',
+                    [username, name, username+'@wellesley.edu', None])
+
+# Returns the user with a given username
+def searchUser(username):
+    CONN = getConn('textbooks_db')
+    curs = dbi.dictCursor(CONN)
+
+    curs.execute('''select * from users where username=%s''',
+            [username])
+    return curs.fetchone()
+
+# Returns all books a user is selling
+def findBooksBySeller(username):
+    CONN = getConn('textbooks_db')
+    curs = dbi.dictCursor(CONN)
+
+    curs.execute('''select * from books where seller=%s''',
+            [username])
+    return curs.fetchall()
+
+# Updates the sold status of a given book
+def setSoldStatus(book_id, status):
+    CONN = getConn('textbooks_db')
+    curs = dbi.cursor(CONN)
+
+    if status == '1':
+        curs.execute('''UPDATE books SET sold_status = 1 WHERE id=%s''',
+            [book_id])
+        return 1
+    else: 
+        curs.execute('''UPDATE books SET sold_status = 0 WHERE id=%s''',
+            [book_id])
+        return 0
+
+# Returns the course matching the specific course id
+def getCourseByID(cid):
+    CONN = getConn('textbooks_db')
+    curs = dbi.dictCursor(CONN)
+
+    curs.execute('''select department, number 
+                    from courses where id=%s''',
+                    [cid])
+    return curs.fetchone()
+
+====================== read-csv.py =====================
+#!/usr/local/bin/python3.6
+
+import sys, csv
+
+if __name__ == '__main__':
+    fname = sys.argv[1]
+    deptAndNumber = []
+
+    with open(fname, 'rb') as csvfile:
+        reader = csv.reader(csvfile, delimiter=',', quotechar='"')
+        for row in reader:
+            course_info = row[1]
+            info = course_info.split(' ')
+            department = info[0]
+            number = info[1]
+            deptAndNumber.append([department, number])
+
+    with open('courses.csv', 'w') as courses:
+        writer = csv.writer(courses, delimiter=',')
+        for course in deptAndNumber: 
+            writer.writerow(course)
+
+    
+    
+
+
+            
+        
+
+====================== database.sql =====================
+use textbooks_db;
+
+drop table if exists books;
+drop table if exists courses;
+drop table if exists users;
+
+/* for all users, either a buyer or a seller */
+create table users (
+    username varchar(20) NOT NULL primary key,
+    name varchar(50),
+    email varchar(100),
+    phnum varchar(10)
+)
+engine = InnoDB;
+
+/* for all courses differentiated by deparment, section and professor */
+create table courses (
+    id int auto_increment NOT NULL primary key,
+    department varchar(4),
+    number char(3)
+)
+engine = InnoDB;
+
+/* for each book uploaded by the seller */
+create table books (
+    id int auto_increment NOT NULL primary key,
+    price int,
+    sold_status int(1),
+    `condition` varchar(20),
+    title int,
+    author varchar(20),
+    `description` varchar(500),
+    seller varchar(20),
+    course int,
+    pic varchar(50),
+    foreign key (course) references courses(id),
+    foreign key (seller) references users(username)
+)
+engine = InnoDB;
+====================== insert-courses.sql =====================
+
+use textbooks_db;
+
+load data local infile 'courses.csv' 
+into table courses
+fields terminated by ',' 
+lines terminated by '\n'
+(department, number);
+
+====================== templates/account.html =====================
+<!doctype html>
+<html lang='en'>
+<head>
+    <meta charset='utf-8'>
+    <meta name=author content="Alice (Yinru) Pan, Joyce Zhao, Iman Hussain">
+    <title>{{ title }}</title>
+    <link rel='stylesheet' href="{{url_for('static', filename = 'style.css')}}">
+    {% block head_stuff %} {% endblock %}
+</head>
+
+<body id="loginpage">
+    <div class="intro">
+        <h1>Textbook Market</h1>
+        <h4>It looks like it's your first time here. 
+            Enter your name to get started.
+        </h4>
+    </div>
+    <form id="titles" method="post" action="{{url_for('verify')}}">
+        <label id="name_label"> Name:
+            <input required type="text" name="name" size="50"></label>
+        <input type="submit" value="Submit">
+    </form>
+</body>
+</html>
+====================== templates/base.html =====================
+<!doctype html>
+<html lang='en'>
+<head>
+    <meta charset='utf-8'>
+    <meta name=author content="Alice (Yinru) Pan, Joyce Zhao, Iman Hussain">
+    <title>{{ title }}</title>
+    <link rel='stylesheet' href="{{url_for('static', filename = 'style.css')}}">
+    {% block head_stuff %} {% endblock %}
+</head>
+<body>
+
+<!-- Only show these navigation links if someone is logged in -->
+{% if loggedInUser %}
+    <div class="navbar">
+        <a href="{{url_for('index')}}">Search</a>
+        <a href="{{url_for('submit')}}">Sell</a>
+        <a href="{{url_for('session_cart')}}">Your Cart</a>
+        <a href="{{url_for('user', username=loggedInUser)}}">Your Profile</a>
+
+        <!-- route defined by CAS -->
+        <form method="GET" action="/logout/"><button id="logoutbutton">logout</button></form>
+    </div>
+
+{% endif %}
+
+{% with messages = get_flashed_messages() %}
+    {% if messages %}
+        <div id="messages">
+        {% for msg in messages %}
+            <p>{{msg}}</p>
+        {% endfor %}
+        </div>
+    {% endif %}
+{% endwith %}
+
+<div class="test">
+{% block main_content %}
+{% endblock %}   
+</div>
+
+</body>
+</html>
+
+====================== templates/book.html =====================
+{% extends "base.html" %}
+
+{% block main_content %}
+
+<div class="page_header">
+    <h1>{{book['title']}}</h1>
+</div>
+<h2>{{course['department']}} {{course['number']}}</h2>
+
+
+<p>
+    <img src="{{url_for('pic', bid=book['id'])}}" alt="{{book['pic']}}">
+</p>
+
+<p>By {{book['author']}}</p>
+<p>Price: ${{book['price']}}</p>
+{% if book['sold_status'] == 0 %}
+    <p><label>Status: </label><span id="sold_status"> Available </span></p>
+{% else %}
+<p><label>Status: </label><span id="sold_status"> Sold </span></p>
+{% endif %}
+<p>Condition: {{condition}}</p>
+<p>Seller: <a href="{{url_for('user', username=seller)}}">{{seller}}</a></p>
+
+{% if loggedInUser == seller %}  
+
+<form id="soldStatus">
+    {% if book['sold_status'] == 1 %}
+        <input type="checkbox" name="markAsSold" value="{{book['id']}}" checked> Mark as Sold   
+    {% else %}
+        <input type="checkbox" name="markAsSold" value="{{book['id']}}"> Mark as Sold   
+    {% endif %}  
+</form>
+
+{% endif %}    
+
+<form method="POST" action="{{url_for('addCart')}}">
+    <input type="hidden" name="bookid" value="{{book['id']}}">
+    <input type="submit" name="submit" value="Add to Cart">
+</form>
+
+{% if seller != loggedInUser %}
+    <h4>Contact Seller</h4>
+    <form method="POST" action="/send_mail/">
+    <table id="contact">
+        <p> Recipient: {{email}} </p>
+        <tr><td><label for="subject">Subject:</td>
+            <td><input type="text" id="subject" name="subject" size="50"></td></tr>
+        <tr><td colspan="2"><label for="body">Email:</td></tr>
+        <tr><td colspan="2"><textarea rows=10 cols=60 id="body" name="body"></textarea></td></tr>
+    </table>
+        <input type="hidden" name="userEmail" value="{{email}}">
+        <input type="submit" name="submit" value="Send Email">
+    </form>
+{% endif %}
+
+<script src="http://ajax.googleapis.com/ajax/libs/jquery/3.1.1/jquery.min.js"></script>
+<script>
+    var URL = "{{url_for('updateSoldStatusAjax')}}"
+</script>
+<script src="{{url_for('static',filename='eventHandlers.js')}}"></script>
+
+{% endblock %}
+====================== templates/cart.html =====================
+{% extends "base.html" %}
+{% block main_content %}
+<div class="page_header">
+    <h1>Your Cart</h1>
+</div>
+
+<p>Take a look at the books you're interested in!</p>
+
+{% for book in cart %}
+<div>
+    <h2>
+        <a href="{{url_for('book', id=book['id'])}}">{{book['title']}}</a>
+    </h2>
+        <p>{{book['author']}}</p>
+        <p>Price: ${{book['price']}} </p>
+        {% if book['sold_status'] == 0 %}
+            <p>Status: Available</p>
+        {% else %}
+            <p>Status: Sold</p>
+        {% endif %}
+    <form method="post" action="">
+        <input type="hidden" name="bookid" value="{{book['id']}}">
+        <input type="submit" name="submit" value="Remove from Cart">
+    </form>
+</div>
+{% endfor %}
+{% endblock %}
+
+====================== templates/login.html =====================
+<!doctype html>
+<html lang='en'>
+<head>
+    <meta charset='utf-8'>
+    <meta name=author content="Alice (Yinru) Pan, Joyce Zhao, Iman Hussain">
+    <title>{{ title }}</title>
+    <link rel='stylesheet' href="{{url_for('static', filename = 'style.css')}}">
+    {% block head_stuff %} {% endblock %}
+</head>
+
+<body id="loginpage">
+
+    <div class="intro">
+        <h1 id="title">Textbook Browser</h1>
+        <p class="description">Welcome! To get started, please login below. </p>
+
+        <!-- route defined by CAS -->
+        <form method="GET" action="/login/"><button id="loginbutton">LOGIN</button></form>
+    </div>
+
+</body>
+</html>
+
+====================== templates/main.html =====================
+{% extends "base.html" %}
+
+{% block main_content %}
+<div class="page_header">
+    <h1>Textbook Browser</h1>
+    <p class="page_description">Welcome to our alpha version!</p>
+    <p class="page_description">To try out the search, type terms such as 'Principles' or 'Classics' to see results.</p>
+</div>
+
+<div class='row'>
+    <div class='column'>
+        <form class="search" method="POST" action="{{url_for('searchBook')}}">
+                <p><label>Search: <input type="text" name="keyword" id="searchbox"></label>
+                    <input type="submit" value="search" id="submit">
+                </p>
+        </form>
+        <form method="GET" action="{{url_for('filter')}}">
+            <p><label>Department:</label>
+                <select id="dept" name="department" required>
+                    <option value="">choose</option>
+                    {% for dept in depts %}
+                        <option value="{{dept[0]}}">{{dept[0]}}</option>
+                    {% endfor %}
+                </select>
+            </p>
+            <p id="cnum"><label >Course Number:</label>
+                <select id="num" name="course_number" required>
+                    <option value="">choose</option>
+                    {% for num in nums %}
+                        <option value="{{num[0]}}">{{num[0]}}</option>
+                    {% endfor %}
+                </select>
+            </p>
+            <p><label for="sort">Sort by:</label>
+                <select id="sort" name="sorting">
+                    <option value="">choose</option>
+                    <option value="price up">Price low to high</option>
+                    <option value="price down">Price high to low</option>
+                    <option value="newest">Newest posted</option>
+                    <option value="condition">By Condition</option>
+                </select>
+            </p>
+            <p>
+                <input type="submit" value="filter">
+            </p>
+            <p>This button turns on/off searching with course numbers:
+                <button id="progressive_enhancement"> Turn on Course number searching</button>
+            </p>
+        </form>
+    </div>
+
+    <div class='column2'>
+        <table id="book-list">
+            <tr id="titles">
+                <th>Info</th>
+                <th>Action</th>
+            </tr>
+            {% for book in books %}
+                <tr>
+                    <td class="info">
+                        <a href="{{url_for('book', id=book['id'])}}">{{book['title']}}</a>
+                        
+                        <ul>
+                            <li><label>Price: $</label>{{book['price']}}</li>
+                            <li><label>Sold status: </label> Available</li>
+                        </ul>
+                    </td>
+                    <td>
+                        <form class="book" method="POST" action="/bookreq/">
+                        <input type="hidden" name="bookid" value="{{book['id']}}">
+                        <input type="hidden" name="uid" value="{{book['seller']}}">
+                        <p><input type="submit" name="submit" value="Book Information"></p>
+                        <p><input type="submit" name="submit" value="Seller Information"></p>
+                        <p><input type="submit" name="submit" value="Add to Cart"></p>
+                        </form>
+                    </td>
+                </tr>
+            {% endfor %}
+        </table>
+    </div>
+</div>
+
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+<script>
+    var progressive_on = true;
+    var URLm="{{url_for('filterBookAjax')}}";
+    $("#cnum").hide();
+
+    $("#progressive_enhancement").on('click', function () {
+    if(progressive_on) {
+        // turn it on
+        $("#cnum").show();
+        $("#progressive_enhancement").text('Turn off Course number searching');
+        progressive_on = false;
+    } else {
+        // turn it off
+        $("#cnum").hide();
+        $("#progressive_enhancement").text('Turn on Course number searching');
+        progressive_on = true;
+    }
+});
+</script>
+<script src="{{url_for('static',filename='eventHandlers.js')}}"></script>
+
+{% endblock %}
+
+====================== templates/submit.html =====================
+{% extends "base.html" %}
+
+{% block main_content %}
+
+<div class="page_header">
+    <h1>Textbook Sale Submission</h1>
+</div>
+<p>This page is for uploading information of the textbook you want to sell.</p>
+
+
+<!-- <p>This button turns on/off all the JavaScript:
+    <button id="progressive_enhancement"> Turn on Progressive Enhancement</button></p> -->
+
+<form method="post" action="{{url_for('submit')}}" enctype="multipart/form-data">
+    <p><label>Book Title:
+        <input required type="text" name="title" size="50"></label></p>
+
+            
+    <p><label>Author:
+        <input name="author" size="50"></label></p>
+
+    <p><label>Department:</label>
+        <select required id="dept" name="departments">
+            <option value="">choose</option>
+            {% for dept in depts %}
+                <option value={{dept[0]}}>{{dept[0]}}</option>
+            {% endfor %}
+        </select>
+    </p>
+
+    <p><label>Course number:</label>
+        <select id="nums" name="course_nums">
+            <option value="">choose</option>
+            {% for num in cnums %}
+                <option value={{num[0]}}>{{num[0]}}</option>
+            {% endfor %}
+        </select>
+    </p> 
+
+    
+    <p><label>Condition:
+        <select required name="condition">
+            <option value="">choose</option>
+            <option value="5">Brand New</option>
+            <option value="4">Like New</option>
+            <option value="3">Very Good</option>
+            <option value="2">Good</option>
+            <option value="1">Acceptable</option>
+        </select>
+    </label></p>
+
+    <p><label>Price (USD):
+        <input required name="price" size="20"></label></p> 
+
+    <p><label>Description: 
+        <textarea name="description" rows=4 cols=50></textarea>
+    </label></p>
+
+    <p><label>Picture (JPEG or PNG):
+        <input type="file" name="pic" accept="image/png, image/jpeg">
+    </label></p>
+
+    <p><input type="submit" value="upload">
+</form>
+
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+<script>
+    var progressive_on = true;
+    var URL="{{url_for('uploadBookAjax')}}";
+</script>
+<script src="{{url_for('static',filename='eventHandlers.js')}}"></script>
+{% endblock %}
+
+====================== templates/users.html =====================
+{% extends "base.html" %}
+
+{% block main_content %}
+
+<div class="page_header">
+    <h1>{{name}}</h1>
+</div>
+
+    <h4>Selling: </h4>
+    {% for book in selling %}
+        <a href="{{url_for('book', id=book['id'])}}">{{book['title']}}</a>
+        {% if loggedInUser == username %} 
+            <span>
+                <form id="soldStatus"> 
+                    {% if book['sold_status'] == 1 %}
+                        <input type="checkbox" name="markAsSold" value="{{book['id']}}" checked> Mark as Sold <br>
+                        {% else %}
+                        <input type="checkbox" name="markAsSold" value="{{book['id']}}"> Mark as Sold <br>
+                    {% endif %}  
+                </form> 
+            </span>
+        {% endif %}            
+        </span>
+    {% endfor %}
+
+{% if loggedInUser != username %}    
+    <h4>Contact Me</h4>
+    <form method="POST" action="/send_mail/">
+    <table id="contact">
+        <p> Recipient: {{username+'@wellesley.edu'}} </p>
+        <tr><td><label for="subject">Subject:</td>
+            <td><input type="text" id="subject" name="subject" size="50"></td></tr>
+        <tr><td colspan="2"><label for="body">Email:</td></tr>
+        <tr><td colspan="2"><textarea rows=10 cols=60 id="body" name="body"></textarea></td></tr>
+    </table>
+        <input type="hidden" name="userEmail" value="{{username+'@wellesley.edu'}}">
+        <input type="submit" name="submit" value="Send Email">
+    </form>
+{% endif %}
+
+<script src="http://ajax.googleapis.com/ajax/libs/jquery/3.1.1/jquery.min.js"></script>
+<script>
+    var URL = "{{url_for('updateSoldStatusAjax')}}"
+</script>
+<script src="{{url_for('static',filename='eventHandlers.js')}}"></script>
+
+{% endblock %}
+
+</html>
+====================== static/eventHandlers.js =====================
+// JavaScript File to add event handlers
+/* global $ sendInfo progressive_enhancement_on */
+
+// dynamically updates the books on the main page
+$('select[name="department"]').change(function() {
+    if (progressive_on) {
+        event.preventDefault();
+        var dept = $(this).val();
+        var sort = $('#sort').val();
+        $.post(URLm,{'dept':dept,'sort':sort},updatem);
+    }
+})
+
+$('select[name="sorting"]').change(function() {
+    if (progressive_on) {
+        event.preventDefault();
+        var dept = $('#dept').val();
+        var sort = $(this).val();
+        $.post(URLm,{'dept':dept,'sort':sort},updatem);
+    }
+})
+
+// getting the list of books according to the criterias and update the books listed
+function updatem(obj){
+    console.log(obj)
+    if(obj.error) {
+        $('#errors').empty().html('Error:'+obj.err);
+    } else {
+        $('#book-list').empty();
+        $('#book-list').append('<tr><th>Info</th><th>Action</th></tr>');
+        var books = obj.books;
+        console.log(books)
+        for (var i=0;i<books.length;i++){
+            book = books[i];
+            $('#book-list').append('<tr><td class="info"><ul>'
+                                    +'<li><a href="{{url_for("book",id=' + book.id + ')}}">'+book.title+'</a></li>'
+                                    +'<li><lable>Price: $</label>'+book.price+'</li>'
+                                    +'<li><label>Sold status: </label> Available </li>'
+                                    +'</ul></td>'
+                                    +'<td><form class="book" method="POST" action="/bookreq/">'
+                                    +'<input type="hidden" name="bookid" value="'+book.id+'>'
+                                    +'<input type="hidden" name="uid" value="'+book.seller+'>'
+                                    +'<p><input type="submit" name="submit" value="Book Information"></p>'
+                                    +'<p><input type="submit" name="submit" value="Seller Information"></p>'
+                                    +'<p><input type="submit" name="submit" value="Add to Cart"></p>'
+                                    +'</form></td></tr></table>');
+        }
+        console.log(obj)
+    }
+}
+
+// provides existing course numbers according to the department selected on submit page
+$('select[name="departments"]').change(function() {
+    if (progressive_on) {
+        event.preventDefault();
+        var dept = $(this).val();
+        $.post(URL,{'dept':dept},update);
+    }
+})
+
+function update(obj) {
+    console.log(obj)
+    if(obj.error) {
+        $('#errors').empty().html('Error:'+obj.err);
+    } else {
+        $('#nums').empty();
+        var options = obj.nums;
+        console.log(options)
+        for (var i=0;i<options.length;i++){
+            $('<option/>').val(options[i][0]).html(options[i][0]).appendTo('#nums');
+         }
+        console.log(obj)
+    }
+}
+
+// dynamically changes the "mark as sold" checkbox
+$("input[type=checkbox]").on('change', function() {
+    bid = $(this).val();
+    if (this.checked) {
+        sendSoldStatus(1,bid);
+    } else {
+        sendSoldStatus(0,bid);
+    }
+});
+
+// Send sold status and book id to the backend
+function sendSoldStatus(sold_status, book_id){
+    $.post(URL,{'sold_status': sold_status, 'id': book_id}, addToPage);
+}
+
+// Display the updated sold status on the page
+function addToPage(json_data){
+    if (json_data['sold_status'] == 0) {
+        $("#sold_status").text("Available");
+    }
+    else {
+        $("#sold_status").text("Sold");
+    }
+}
+====================== static/style.css =====================
+/* For flashed messages; make them stand out using red and italics */
+
+html, body {
+    overflow: auto;
+    margin:0;
+    padding:0;
+    height: 100%;
+    background-color: #659dbd;
+}
+
+.test {
+    background-image: linear-gradient(white 1%, #659dbd);
+    text-align: center;
+    height:100%
+}
+
+#messages {
+    color: red;
+    font-style: italic;
+}
+
+h1 {
+    margin: 0;
+    font-size: 200%;
+}
+
+* {
+    /* font-family: "Courier New", Courier, monospace; */
+    font-family: Futura, "Trebuchet MS", Arial, sans-serif;
+}
+
+#soldStatus {
+    display: inline;
+}
+
+.row {
+    padding: 10px 20%;
+}
+
+#titles {
+    text-align: center;
+}
+
+.column {
+    float: left;
+    width: 40%;
+    text-align: left;
+}
+.column2 {
+    float: left;
+    width: 60%;
+    text-align: left;
+}
+.row:after {
+    content: "";
+    display: table;
+    clear: both;
+}
+
+#loginpage {
+    background-image: linear-gradient(#659dbd, #DAAD86);
+}
+
+.intro {
+    text-align: center;
+    margin-top: 100px;
+    color: white;
+    font-family: Futura, "Trebuchet MS", Arial, sans-serif;
+}
+
+#contact {
+    margin: auto;
+}
+
+.description {
+    font-size: 30px;
+}
+
+#title {
+    font-size: 40px;
+}
+
+#loginbutton {
+    font-size: 24px;
+    height: 50px;
+    width: 200px;
+    border-radius: 24px;
+    color: #659dbd;
+}
+
+#logoutbutton {
+    font-size: 16px;
+    height: 35px;
+    width: 100px;
+    margin: 15px;
+    border-radius: 24px;
+    background-color: #8d8741;
+    color: white;
+}
+
+#name_label {
+    color: white;
+}
+
+.navbar {
+    padding-top: 20px;
+    font-size: 20px;
+    background-color: white;
+    text-align: center;
+}
+
+a {
+    text-decoration: none;
+    padding: 10px;
+    color:#8d8741;
+}
+
+a:visited {
+    color:#8d8741;
+}
+
+.page_header {
+    color: #BC986A;
+}
+
+.page_description {
+    font-size: 20px;
+}

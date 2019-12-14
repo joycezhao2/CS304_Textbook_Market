@@ -1,0 +1,42 @@
+<!doctype html>
+<html lang='en'>
+<head>
+    <meta charset='utf-8'>
+    <meta name=author content="Alice (Yinru) Pan, Joyce Zhao, Iman Hussain">
+    <title>{{ title }}</title>
+    <link rel='stylesheet' href="{{url_for('static', filename = 'style.css')}}">
+    {% block head_stuff %} {% endblock %}
+</head>
+<body>
+
+<!-- Only show these navigation links if someone is logged in -->
+{% if loggedInUser %}
+    <div class="navbar">
+        <a href="{{url_for('index')}}">Search</a>
+        <a href="{{url_for('submit')}}">Sell</a>
+        <a href="{{url_for('session_cart')}}">Your Cart</a>
+        <a href="{{url_for('user', username=loggedInUser)}}">Your Profile</a>
+
+        <!-- route defined by CAS -->
+        <form method="GET" action="/logout/"><button id="logoutbutton">logout</button></form>
+    </div>
+
+{% endif %}
+
+{% with messages = get_flashed_messages() %}
+    {% if messages %}
+        <div id="messages">
+        {% for msg in messages %}
+            <p>{{msg}}</p>
+        {% endfor %}
+        </div>
+    {% endif %}
+{% endwith %}
+
+<div class="test">
+{% block main_content %}
+{% endblock %}   
+</div>
+
+</body>
+</html>

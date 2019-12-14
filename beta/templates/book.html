@@ -1,0 +1,63 @@
+{% extends "base.html" %}
+
+{% block main_content %}
+
+<div class="page_header">
+    <h1>{{book['title']}}</h1>
+</div>
+<h2>{{course['department']}} {{course['number']}}</h2>
+
+
+<p>
+    <img src="{{url_for('pic', bid=book['id'])}}" alt="{{book['pic']}}">
+</p>
+
+<p>By {{book['author']}}</p>
+<p>Price: ${{book['price']}}</p>
+{% if book['sold_status'] == 0 %}
+    <p><label>Status: </label><span id="sold_status"> Available </span></p>
+{% else %}
+<p><label>Status: </label><span id="sold_status"> Sold </span></p>
+{% endif %}
+<p>Condition: {{condition}}</p>
+<p>Seller: <a href="{{url_for('user', username=seller)}}">{{seller}}</a></p>
+
+{% if loggedInUser == seller %}  
+
+<form id="soldStatus">
+    {% if book['sold_status'] == 1 %}
+        <input type="checkbox" name="markAsSold" value="{{book['id']}}" checked> Mark as Sold   
+    {% else %}
+        <input type="checkbox" name="markAsSold" value="{{book['id']}}"> Mark as Sold   
+    {% endif %}  
+</form>
+
+{% endif %}    
+
+<form method="POST" action="{{url_for('addCart')}}">
+    <input type="hidden" name="bookid" value="{{book['id']}}">
+    <input type="submit" name="submit" value="Add to Cart">
+</form>
+
+{% if seller != loggedInUser %}
+    <h4>Contact Seller</h4>
+    <form method="POST" action="/send_mail/">
+    <table id="contact">
+        <p> Recipient: {{email}} </p>
+        <tr><td><label for="subject">Subject:</td>
+            <td><input type="text" id="subject" name="subject" size="50"></td></tr>
+        <tr><td colspan="2"><label for="body">Email:</td></tr>
+        <tr><td colspan="2"><textarea rows=10 cols=60 id="body" name="body"></textarea></td></tr>
+    </table>
+        <input type="hidden" name="userEmail" value="{{email}}">
+        <input type="submit" name="submit" value="Send Email">
+    </form>
+{% endif %}
+
+<script src="http://ajax.googleapis.com/ajax/libs/jquery/3.1.1/jquery.min.js"></script>
+<script>
+    var URL = "{{url_for('updateSoldStatusAjax')}}"
+</script>
+<script src="{{url_for('static',filename='eventHandlers.js')}}"></script>
+
+{% endblock %}

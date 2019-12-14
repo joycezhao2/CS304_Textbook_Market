@@ -1,0 +1,72 @@
+{% extends "base.html" %}
+
+{% block main_content %}
+
+<div class="page_header">
+    <h1>Textbook Sale Submission</h1>
+</div>
+<p>This page is for uploading information of the textbook you want to sell.</p>
+
+
+<!-- <p>This button turns on/off all the JavaScript:
+    <button id="progressive_enhancement"> Turn on Progressive Enhancement</button></p> -->
+
+<form method="post" action="{{url_for('submit')}}" enctype="multipart/form-data">
+    <p><label>Book Title:
+        <input required type="text" name="title" size="50"></label></p>
+
+            
+    <p><label>Author:
+        <input name="author" size="50"></label></p>
+
+    <p><label>Department:</label>
+        <select required id="dept" name="departments">
+            <option value="">choose</option>
+            {% for dept in depts %}
+                <option value={{dept[0]}}>{{dept[0]}}</option>
+            {% endfor %}
+        </select>
+    </p>
+
+    <p><label>Course number:</label>
+        <select id="nums" name="course_nums">
+            <option value="">choose</option>
+            {% for num in cnums %}
+                <option value={{num[0]}}>{{num[0]}}</option>
+            {% endfor %}
+        </select>
+    </p> 
+
+    
+    <p><label>Condition:
+        <select required name="condition">
+            <option value="">choose</option>
+            <option value="5">Brand New</option>
+            <option value="4">Like New</option>
+            <option value="3">Very Good</option>
+            <option value="2">Good</option>
+            <option value="1">Acceptable</option>
+        </select>
+    </label></p>
+
+    <p><label>Price (USD):
+        <input required name="price" size="20"></label></p> 
+
+    <p><label>Description: 
+        <textarea name="description" rows=4 cols=50></textarea>
+    </label></p>
+
+    <p><label>Picture (JPEG or PNG):
+        <input type="file" name="pic" accept="image/png, image/jpeg">
+    </label></p>
+
+    <p><input type="submit" value="upload">
+</form>
+
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+<script>
+    var progressive_on = true;
+    var URL="{{url_for('uploadBookAjax')}}";
+</script>
+<script src="{{url_for('static',filename='eventHandlers.js')}}"></script>
+{% endblock %}

@@ -1,0 +1,105 @@
+{% extends "base.html" %}
+
+{% block main_content %}
+<div class="page_header">
+    <h1>Textbook Browser</h1>
+    <p class="page_description">Welcome to our alpha version!</p>
+    <p class="page_description">To try out the search, type terms such as 'Principles' or 'Classics' to see results.</p>
+</div>
+
+<div class='row'>
+    <div class='column'>
+        <form class="search" method="POST" action="{{url_for('searchBook')}}">
+                <p><label>Search: <input type="text" name="keyword" id="searchbox"></label>
+                    <input type="submit" value="search" id="submit">
+                </p>
+        </form>
+        <form method="GET" action="{{url_for('filter')}}">
+            <p><label>Department:</label>
+                <select id="dept" name="department" required>
+                    <option value="">choose</option>
+                    {% for dept in depts %}
+                        <option value="{{dept[0]}}">{{dept[0]}}</option>
+                    {% endfor %}
+                </select>
+            </p>
+            <p id="cnum"><label >Course Number:</label>
+                <select id="num" name="course_number" required>
+                    <option value="">choose</option>
+                    {% for num in nums %}
+                        <option value="{{num[0]}}">{{num[0]}}</option>
+                    {% endfor %}
+                </select>
+            </p>
+            <p><label for="sort">Sort by:</label>
+                <select id="sort" name="sorting">
+                    <option value="">choose</option>
+                    <option value="price up">Price low to high</option>
+                    <option value="price down">Price high to low</option>
+                    <option value="newest">Newest posted</option>
+                    <option value="condition">By Condition</option>
+                </select>
+            </p>
+            <p>
+                <input type="submit" value="filter">
+            </p>
+            <p>This button turns on/off searching with course numbers:
+                <button id="progressive_enhancement"> Turn on Course number searching</button>
+            </p>
+        </form>
+    </div>
+
+    <div class='column2'>
+        <table id="book-list">
+            <tr id="titles">
+                <th>Info</th>
+                <th>Action</th>
+            </tr>
+            {% for book in books %}
+                <tr>
+                    <td class="info">
+                        <a href="{{url_for('book', id=book['id'])}}">{{book['title']}}</a>
+                        
+                        <ul>
+                            <li><label>Price: $</label>{{book['price']}}</li>
+                            <li><label>Sold status: </label> Available</li>
+                        </ul>
+                    </td>
+                    <td>
+                        <form class="book" method="POST" action="/bookreq/">
+                        <input type="hidden" name="bookid" value="{{book['id']}}">
+                        <input type="hidden" name="uid" value="{{book['seller']}}">
+                        <p><input type="submit" name="submit" value="Book Information"></p>
+                        <p><input type="submit" name="submit" value="Seller Information"></p>
+                        <p><input type="submit" name="submit" value="Add to Cart"></p>
+                        </form>
+                    </td>
+                </tr>
+            {% endfor %}
+        </table>
+    </div>
+</div>
+
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+<script>
+    var progressive_on = true;
+    var URLm="{{url_for('filterBookAjax')}}";
+    $("#cnum").hide();
+
+    $("#progressive_enhancement").on('click', function () {
+    if(progressive_on) {
+        // turn it on
+        $("#cnum").show();
+        $("#progressive_enhancement").text('Turn off Course number searching');
+        progressive_on = false;
+    } else {
+        // turn it off
+        $("#cnum").hide();
+        $("#progressive_enhancement").text('Turn on Course number searching');
+        progressive_on = true;
+    }
+});
+</script>
+<script src="{{url_for('static',filename='eventHandlers.js')}}"></script>
+
+{% endblock %}

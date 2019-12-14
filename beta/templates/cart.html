@@ -1,0 +1,27 @@
+{% extends "base.html" %}
+{% block main_content %}
+<div class="page_header">
+    <h1>Your Cart</h1>
+</div>
+
+<p>Take a look at the books you're interested in!</p>
+
+{% for book in cart %}
+<div>
+    <h2>
+        <a href="{{url_for('book', id=book['id'])}}">{{book['title']}}</a>
+    </h2>
+        <p>{{book['author']}}</p>
+        <p>Price: ${{book['price']}} </p>
+        {% if book['sold_status'] == 0 %}
+            <p>Status: Available</p>
+        {% else %}
+            <p>Status: Sold</p>
+        {% endif %}
+    <form method="post" action="">
+        <input type="hidden" name="bookid" value="{{book['id']}}">
+        <input type="submit" name="submit" value="Remove from Cart">
+    </form>
+</div>
+{% endfor %}
+{% endblock %}

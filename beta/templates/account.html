@@ -1,0 +1,24 @@
+<!doctype html>
+<html lang='en'>
+<head>
+    <meta charset='utf-8'>
+    <meta name=author content="Alice (Yinru) Pan, Joyce Zhao, Iman Hussain">
+    <title>{{ title }}</title>
+    <link rel='stylesheet' href="{{url_for('static', filename = 'style.css')}}">
+    {% block head_stuff %} {% endblock %}
+</head>
+
+<body id="loginpage">
+    <div class="intro">
+        <h1>Textbook Market</h1>
+        <h4>It looks like it's your first time here. 
+            Enter your name to get started.
+        </h4>
+    </div>
+    <form id="titles" method="post" action="{{url_for('verify')}}">
+        <label id="name_label"> Name:
+            <input required type="text" name="name" size="50"></label>
+        <input type="submit" value="Submit">
+    </form>
+</body>
+</html>

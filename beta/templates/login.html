@@ -1,0 +1,22 @@
+<!doctype html>
+<html lang='en'>
+<head>
+    <meta charset='utf-8'>
+    <meta name=author content="Alice (Yinru) Pan, Joyce Zhao, Iman Hussain">
+    <title>{{ title }}</title>
+    <link rel='stylesheet' href="{{url_for('static', filename = 'style.css')}}">
+    {% block head_stuff %} {% endblock %}
+</head>
+
+<body id="loginpage">
+
+    <div class="intro">
+        <h1 id="title">Textbook Browser</h1>
+        <p class="description">Welcome! To get started, please login below. </p>
+
+        <!-- route defined by CAS -->
+        <form method="GET" action="/login/"><button id="loginbutton">LOGIN</button></form>
+    </div>
+
+</body>
+</html>
