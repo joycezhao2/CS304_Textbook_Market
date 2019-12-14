@@ -92,7 +92,7 @@ def search(term):
 @app.route('/searchBook/', methods=["POST"])
 def searchBook():
     search_term = request.form.get("keyword")
-    return redirect(url_for('index', term=search_term))
+    return redirect(url_for('search', term=search_term))
 
 # Route to handle filtering with selected criterias (department, course number, sorting order)
 @app.route('/filter/', methods=["GET"])
@@ -204,7 +204,7 @@ def submit():
         # handling pictures
         pic = request.files['pic']
         if pic.filename == '': 
-            filename = secure_filename('default.png')
+            filename = secure_filename('default-book.png')
             pathname = os.path.join(app.config['UPLOADS'],filename)
         else: 
             user_filename = pic.filename
@@ -229,10 +229,16 @@ def submit():
                             depts=departments,
                             cnums=course_nums)
 
-# Route handling picture
-@app.route('/pic/<bid>/')
-def pic(bid):
-    filename = lookup.getPic(bid)   
+# Route handling book pictures
+@app.route('/bookPic/<bid>/')
+def bookPic(bid):
+    filename = lookup.getBookPic(bid)   
+    return send_from_directory(app.config['UPLOADS'],filename[0])
+
+# Route handling user profile
+@app.route('/profilePic/<username>/')
+def profilePic(username):
+    filename = lookup.getUserPic(username)   
     return send_from_directory(app.config['UPLOADS'],filename[0])
 
 # Route handling adding to your cart (session based)
@@ -316,13 +322,42 @@ def user(username):
 
     selling = lookup.findBooksBySeller(username)
     user = lookup.searchUser(username)
-
     return render_template('users.html', 
                             title='User',
-                            name=user['name'], 
+                            user=user, 
                             selling=selling,
                             username=username,
                             loggedInUser=loggedInUser)  
+
+# Route to edit user profile
+@app.route('/editProfile/<username>/', methods=["GET", "POST"])
+def editProfile(username):
+    if 'CAS_USERNAME' in session:
+        loggedInUser = session['CAS_USERNAME']
+    else:
+        return redirect(url_for('index'))
+
+    selling = lookup.findBooksBySeller(username)
+    user = lookup.searchUser(username)
+
+    pic = request.files['profilepic']
+    bio = request.form.get("userBio")
+    
+    # if a photo is uploaded, save it in the filesystem and 
+    # update it in the database
+    if pic.filename != '': 
+        user_filename = pic.filename
+        ext = user_filename.split('.')[-1]
+        filename = secure_filename('{}.{}'.format(username,ext))
+        pathname = os.path.join(app.config['UPLOADS'],filename)
+        print(pathname)
+        pic.save(pathname)
+        lookup.uploadProfilePic(filename, username)
+    
+    # Update the bio
+    lookup.updateBio(bio, username)
+
+    return redirect(url_for('user', username=username))
 
 # Route to send an email to a user
 @app.route('/send_mail/', methods=["GET", "POST"])

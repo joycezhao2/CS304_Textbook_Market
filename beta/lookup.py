@@ -3,20 +3,30 @@ import dbi
 # Returns a database connection for that db
 def getConn(db):
     # this line is to allow db connection on a personal account
-    # dsn = dbi.read_cnf("~/.textbook.cnf")
-    dsn = dbi.read_cnf()
+    dsn = dbi.read_cnf("~/.textbook.cnf")
+    # dsn = dbi.read_cnf()
     conn = dbi.connect(dsn)
     dbi.select_db(conn,db)
     return conn
 
 # Returns the picture attached to a specified book
-def getPic(bid):
+def getBookPic(bid):
     CONN = getConn('textbooks_db')
     curs = dbi.cursor(CONN)
 
     numrows = curs.execute(
         '''select pic from books where id = %s''',
         [bid])
+    filename = curs.fetchone()
+    return filename
+
+# Returns a user's profile picture
+def getUserPic(username):
+    CONN = getConn('textbooks_db')
+    curs = dbi.cursor(CONN)
+    numrows = curs.execute(
+        '''select pic from users where username = %s''',
+        [username])
     filename = curs.fetchone()
     return filename
 
@@ -220,13 +230,32 @@ def findBook(book_id):
     return curs.fetchone()
 
 # Creates a new user in the database
+# Creates a new user in the database
 def createUser(name, username):
     CONN = getConn('textbooks_db')
     curs = dbi.dictCursor(CONN)
 
-    curs.execute('''insert into users(username, name, email, phnum)
+    curs.execute('''insert into users(username, name, email, pic, bio)
                     values(%s, %s, %s, %s)''',
-                    [username, name, username+'@wellesley.edu', None])
+                    [username, name, username+'@wellesley.edu', 'default-user.png', None])
+
+# Uploads a profile picture in the database
+def uploadProfilePic(pathname, username):
+    CONN = getConn('textbooks_db')
+    curs = dbi.dictCursor(CONN)
+
+    curs.execute('''update users set pic=%s
+                    where username=%s''',
+                    [pathname, username])
+
+# Update the bio of a user
+def updateBio(bio, username):
+    CONN = getConn('textbooks_db')
+    curs = dbi.dictCursor(CONN)
+
+    curs.execute('''update users set bio=%s
+                    where username=%s''',
+                    [bio, username])
 
 # Returns the user with a given username
 def searchUser(username):

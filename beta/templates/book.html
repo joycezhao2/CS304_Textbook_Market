@@ -7,10 +7,7 @@
 </div>
 <h2>{{course['department']}} {{course['number']}}</h2>
 
-
-<p>
-    <img src="{{url_for('pic', bid=book['id'])}}" alt="{{book['pic']}}">
-</p>
+<p><img src="{{url_for('bookPic', bid=book['id'])}}" alt="{{book['pic']}}"></p>
 
 <p>By {{book['author']}}</p>
 <p>Price: ${{book['price']}}</p>
