@@ -92,7 +92,7 @@ def search(term):
 @app.route('/searchBook/', methods=["POST"])
 def searchBook():
     search_term = request.form.get("keyword")
-    return redirect(url_for('index', term=search_term))
+    return redirect(url_for('search', term=search_term))
 
 # Route to handle filtering with selected criterias (department, course number, sorting order)
 @app.route('/filter/', methods=["GET"])
@@ -137,7 +137,6 @@ def filterBookAjax():
         username = session['CAS_USERNAME']
     else:
         return redirect(url_for('index'))
-    print(request.form)
 
     dept = request.form['dept']
     sort = request.form['sort']
