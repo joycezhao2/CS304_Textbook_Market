@@ -33,6 +33,8 @@ create table books (
     seller varchar(20),
     course int,
     pic varchar(50),
+    professor varchar(50),
+    `year` varchar(4), 
     foreign key (course) references courses(id),
     foreign key (seller) references users(username)
 )

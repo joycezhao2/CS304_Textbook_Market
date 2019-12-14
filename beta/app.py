@@ -137,7 +137,6 @@ def filterBookAjax():
         username = session['CAS_USERNAME']
     else:
         return redirect(url_for('index'))
-    print(request.form)
 
     dept = request.form['dept']
     sort = request.form['sort']
@@ -199,6 +198,8 @@ def submit():
         price = request.form.get('price')
         condition = request.form.get('condition')
         description = request.form.get('description')
+        professor = request.form.get('professor')
+        year = request.form.get('year')
 
         # handling pictures
         pic = request.files['pic']
@@ -214,7 +215,7 @@ def submit():
 
         # insert into db
         insert = lookup.uploadBook(dept, course_num, price, condition, title, author, 
-                                    description, username, filename)
+                                    description, username, filename, professor, year)
         if insert == 1:
             flash('Upload successful')
         else:

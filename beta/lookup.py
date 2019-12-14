@@ -188,7 +188,7 @@ def getCourseNumbers(dept):
     return curs.fetchall()
 
 # Executes the upload of a book, returns whether insertion is successful 
-def uploadBook(dept, course_num, price, condition, title, author, description, seller, filename):
+def uploadBook(dept, course_num, price, condition, title, author, description, seller, filename, professor, year):
     CONN = getConn('textbooks_db')
     curs = dbi.cursor(CONN)
     success = 1
@@ -205,9 +205,9 @@ def uploadBook(dept, course_num, price, condition, title, author, description, s
     else:
         # insert the book into the database
         curs.execute('''insert into books(price, sold_status,`condition`, title, author,
-                                        `description`,seller,course,pic)
+                                        `description`,seller,course,pic, professor, `year`)
                         values (%s,%s,%s,%s,%s,%s,%s,%s,%s)''',
-                        [price, 0, condition, title, author, description, seller, course_id, filename])
+                        [price, 0, condition, title, author, description, seller, course_id, filename, professor, year])
         return 1
 
 # Returns all information of a specific book

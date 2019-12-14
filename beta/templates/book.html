@@ -14,6 +14,8 @@
 
 <p>By {{book['author']}}</p>
 <p>Price: ${{book['price']}}</p>
+<p>Professor: {{book['professor']}}</p>
+<p>Year used: {{book['year']}}</p>
 {% if book['sold_status'] == 0 %}
     <p><label>Status: </label><span id="sold_status"> Available </span></p>
 {% else %}

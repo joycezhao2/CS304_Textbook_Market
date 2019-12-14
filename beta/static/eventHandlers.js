@@ -22,7 +22,6 @@ $('select[name="sorting"]').change(function() {
 
 // getting the list of books according to the criterias and update the books listed
 function updatem(obj){
-    console.log(obj)
     if(obj.error) {
         $('#errors').empty().html('Error:'+obj.err);
     } else {
@@ -32,18 +31,18 @@ function updatem(obj){
         console.log(books)
         for (var i=0;i<books.length;i++){
             book = books[i];
-            $('#book-list').append('<tr><td class="info"><ul>'
-                                    +'<li><a href="{{url_for("book",id=' + book.id + ')}}">'+book.title+'</a></li>'
-                                    +'<li><lable>Price: $</label>'+book.price+'</li>'
+            $('#book-list').append('<tr><td class="info">'
+                                    +'<a href="{{url_for("book",id='+book.id+')}}>'+book.title+'</a>'
+                                    +'<ul><li><lable>Price: $</label>'+book.price+'</li>'
                                     +'<li><label>Sold status: </label> Available </li>'
                                     +'</ul></td>'
                                     +'<td><form class="book" method="POST" action="/bookreq/">'
-                                    +'<input type="hidden" name="bookid" value="'+book.id+'>'
-                                    +'<input type="hidden" name="uid" value="'+book.seller+'>'
+                                    +'<input type="hidden" name="bookid" value="'+book.id+'">'
+                                    +'<input type="hidden" name="uid" value="'+book.seller+'">'
                                     +'<p><input type="submit" name="submit" value="Book Information"></p>'
                                     +'<p><input type="submit" name="submit" value="Seller Information"></p>'
                                     +'<p><input type="submit" name="submit" value="Add to Cart"></p>'
-                                    +'</form></td></tr></table>');
+                                    +'</form></td></tr>');
         }
         console.log(obj)
     }
