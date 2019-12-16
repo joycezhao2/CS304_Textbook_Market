@@ -2,12 +2,20 @@
 
 {% block main_content %}
 
-<div class="page_header">
-    <h1>{{book['title']}}</h1>
+<div class="profile">
+    <div class="flex-container">
+        <div>
+            <div id="profile-pic">
+                <img src="{{url_for('bookPic', bid=book['id'])}}" alt="{{book['pic']}}" id="thumbnail">
+            </div> 
+        </div>
+    
+        <div class="profile-header">
+            <h1>{{book['title']}}</h1>
+            <p>{{course['department']}} {{course['number']}}</p>    
+        </div>
+    </div>
 </div>
-<h2>{{course['department']}} {{course['number']}}</h2>
-
-<p><img src="{{url_for('bookPic', bid=book['id'])}}" alt="{{book['pic']}}"></p>
 
 {% if seller != loggedInUser %}
 <p>By {{book['author']}}</p>

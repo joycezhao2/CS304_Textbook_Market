@@ -17,11 +17,21 @@ html, body {
 #messages {
     color: red;
     font-style: italic;
+    background: white;
+    text-align: center;
+}
+
+#messages p {
+    margin: 0px;
 }
 
 h1 {
     margin: 0;
     font-size: 200%;
+}
+
+.page_header {
+    color: #BC986A;
 }
 
 * {
@@ -127,14 +137,61 @@ a:visited {
     color:#696643;
 }
 
-.page_header {
-    color: #BC986A;
-}
-
 .page_description {
     font-size: 20px;
 }
 
-form {
-    margin-bottom: 30px;
+.profile-header {
+    margin: 0px 25px;
+    text-align: left;
+    color: #BC986A;
+    max-width: 350px;
+}
+
+.profile-header p {
+    color: black;
+    max-width: 350px;
+}
+
+.profile-header textarea {
+    font-size: 16px;
+}
+
+#bio {
+    font-style: italic;
+}
+
+
+.flex-container {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding-top: 50px;
+}
+
+#profile-pic {
+    height: 250px;
+    width: 250px;
+    overflow: hidden;
+    margin: 0px 25px;
+}
+
+#thumbnail {
+    max-height: 250px;
+}
+
+ul {
+    padding: 0px;
+}
+
+#editprofile {
+    font-size: 16px;
+    height: 35px;
+    width: 100px;
+    border-radius: 24px;
+    background-color: white;
+}
+
+.profile {
+    padding-bottom: 30px;
 }

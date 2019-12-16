@@ -358,7 +358,7 @@ def editProfile(username):
     
     # Update the bio
     lookup.updateBio(bio, username)
-
+    flash('Profile updated')
     return redirect(url_for('user', username=username))
 
 # Route to send an email to a user
@@ -405,6 +405,7 @@ def updateSoldStatusAjax():
     status = lookup.setSoldStatus(bid,status)
     return jsonify({'sold_status': status})
 
+# Route that handles updating book information
 @app.route('/update/<id>', methods=["GET", "POST"])
 def update(id):
     book = lookup.findBook(id)
@@ -413,6 +414,7 @@ def update(id):
         bookPrice = request.form.get('book-price')
         bookProfessor = request.form.get('book-professor')
         bookYear = request.form.get('book-year')
+        
         #if update button is clicked
         if request.form['submit'] == 'update':
             lookup.update(bookAuthor, bookPrice, bookProfessor, bookYear, id)
