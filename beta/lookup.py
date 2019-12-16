@@ -3,8 +3,8 @@ import dbi
 # Returns a database connection for that db
 def getConn(db):
     # this line is to allow db connection on a personal account
-    dsn = dbi.read_cnf("~/.textbook.cnf")
-    # dsn = dbi.read_cnf()
+    # dsn = dbi.read_cnf("~/.textbook.cnf")
+    dsn = dbi.read_cnf()
     conn = dbi.connect(dsn)
     dbi.select_db(conn,db)
     return conn
@@ -256,6 +256,14 @@ def updateBio(bio, username):
     curs.execute('''update users set bio=%s
                     where username=%s''',
                     [bio, username])
+
+def update(author, price, professor, year, id):
+    CONN = getConn('textbooks_db')
+    curs = dbi.dictCursor(CONN)
+    
+    curs.execute('''update books set author=%s, price=%s, professor=%s, year=%s
+                    where id=%s''',
+                    [author, price, professor, year, id])
 
 # Returns the user with a given username
 def searchUser(username):

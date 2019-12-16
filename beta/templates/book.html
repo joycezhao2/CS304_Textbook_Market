@@ -9,10 +9,39 @@
 
 <p><img src="{{url_for('bookPic', bid=book['id'])}}" alt="{{book['pic']}}"></p>
 
+{% if seller != loggedInUser %}
 <p>By {{book['author']}}</p>
 <p>Price: ${{book['price']}}</p>
 <p>Professor: {{book['professor']}}</p>
 <p>Year used: {{book['year']}}</p>
+{% endif %}
+
+{% if loggedInUser == seller %} 
+<form method=POST action=" {{ url_for('update', id=book['id'])}}">
+    <table id="edit">
+        <tr>
+            <td><label for="book-author">Author</label></td>
+            <td><input name='book-author' value="{{book['author']}}"></td> 
+        </tr>
+        <tr>
+            <td><label for="book-price">Price</label></td>
+            <td><input name='book-price' value="{{book['price']}}"></td> 
+        </tr>
+        <tr>
+            <td><label for="book-professor">Professor</label></td>
+            <td><input name='book-professor' value="{{book['professor']}}"></td> 
+        </tr>
+        <tr>
+            <td><label for="book-year">Year Used</label></td>
+            <td><input name='book-year' value="{{book['year']}}"></td> 
+        </tr>
+    </table>
+    <div>
+        <input type="submit" name="submit" value="update">
+    </div>
+</form>
+{% endif %}   
+
 {% if book['sold_status'] == 0 %}
     <p><label>Status: </label><span id="sold_status"> Available </span></p>
 {% else %}

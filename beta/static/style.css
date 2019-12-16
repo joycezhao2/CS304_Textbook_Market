@@ -33,6 +33,10 @@ h1 {
     display: inline;
 }
 
+#edit {
+    display: inline;
+}
+
 .row {
     padding: 10px 20%;
 }
@@ -69,6 +73,10 @@ h1 {
 }
 
 #contact {
+    margin: auto;
+}
+
+#edit {
     margin: auto;
 }
 
@@ -125,4 +133,8 @@ a:visited {
 
 .page_description {
     font-size: 20px;
+}
+
+form {
+    margin-bottom: 30px;
 }

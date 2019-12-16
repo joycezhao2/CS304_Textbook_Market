@@ -403,6 +403,20 @@ def updateSoldStatusAjax():
     status = lookup.setSoldStatus(bid,status)
     return jsonify({'sold_status': status})
 
+@app.route('/update/<id>', methods=["GET", "POST"])
+def update(id):
+    book = lookup.findBook(id)
+    if request.method == "POST":
+        bookAuthor = request.form.get('book-author')
+        bookPrice = request.form.get('book-price')
+        bookProfessor = request.form.get('book-professor')
+        bookYear = request.form.get('book-year')
+        #if update button is clicked
+        if request.form['submit'] == 'update':
+            lookup.update(bookAuthor, bookPrice, bookProfessor, bookYear, id)
+            flash('Fields updated successfully')
+    return redirect(url_for('book', id=id))
+
 if __name__ == '__main__':
     import sys, os
     if len(sys.argv) > 1:
