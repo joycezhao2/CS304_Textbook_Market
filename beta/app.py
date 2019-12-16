@@ -154,6 +154,8 @@ def filterBookAjax():
     num = 0
 
     books = lookup.filterBook(dept,num,sort)
+    for book in books:
+        book['url'] = url_for("book",id=book['id'])
 
     try:
         return jsonify({'error':False, 'dept':dept, 'sort':sort,'books':books})

@@ -28,11 +28,11 @@ function updatem(obj){
         $('#book-list').empty();
         $('#book-list').append('<tr><th>Info</th><th>Action</th></tr>');
         var books = obj.books;
-        console.log(books)
         for (var i=0;i<books.length;i++){
             book = books[i];
+            console.log(book.url)
             $('#book-list').append('<tr><td class="info">'
-                                    +'<a href="{{url_for("book",id='+book.id+')}}>'+book.title+'</a>'
+                                    +'<a href="'+book.url+'">'+book.title+'</a>'
                                     +'<ul><li><lable>Price: $</label>'+book.price+'</li>'
                                     +'<li><label>Sold status: </label> Available </li>'
                                     +'</ul></td>'
