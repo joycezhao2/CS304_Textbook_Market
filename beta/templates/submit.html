@@ -19,16 +19,16 @@
     <p><label>Author:
         <input name="author" size="50"></label></p>
 
-    <p><label>Department:</label>
+    <p><label for="dept">Department:</label>
         <select required id="dept" name="departments">
             <option value="">choose</option>
             {% for dept in depts %}
-                <option value={{dept[0]}}>{{dept[0]}}</option>
+            <option value={{dept[0]}}>{{dept[0]}}</option>
             {% endfor %}
         </select>
     </p>
 
-    <p><label>Course number:</label>
+    <p><label for="nums">Course number:</label>
         <select id="nums" name="course_nums">
             <option value="">choose</option>
             {% for num in cnums %}

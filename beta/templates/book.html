@@ -29,19 +29,19 @@
     <table id="edit">
         <tr>
             <td><label for="book-author">Author</label></td>
-            <td><input name='book-author' value="{{book['author']}}"></td> 
+            <td><input id="book-author" name='book-author' value="{{book['author']}}"></td> 
         </tr>
         <tr>
             <td><label for="book-price">Price</label></td>
-            <td><input name='book-price' value="{{book['price']}}"></td> 
+            <td><input id="book-price" name='book-price' value="{{book['price']}}"></td> 
         </tr>
         <tr>
             <td><label for="book-professor">Professor</label></td>
-            <td><input name='book-professor' value="{{book['professor']}}"></td> 
+            <td><input id="book-professor" name='book-professor' value="{{book['professor']}}"></td> 
         </tr>
         <tr>
             <td><label for="book-year">Year Used</label></td>
-            <td><input name='book-year' value="{{book['year']}}"></td> 
+            <td><input id="book-year" name='book-year' value="{{book['year']}}"></td> 
         </tr>
     </table>
     <div>
@@ -61,10 +61,11 @@
 {% if loggedInUser == seller %}  
 
 <form id="soldStatus">
+    <label for="soldStat">Mark as Sold</label>
     {% if book['sold_status'] == 1 %}
-        <input type="checkbox" name="markAsSold" value="{{book['id']}}" checked> Mark as Sold   
+        <input id="soldStat" type="checkbox" name="markAsSold" value="{{book['id']}}" checked>   
     {% else %}
-        <input type="checkbox" name="markAsSold" value="{{book['id']}}"> Mark as Sold   
+        <input id="soldStat" type="checkbox" name="markAsSold" value="{{book['id']}}">   
     {% endif %}  
 </form>
 

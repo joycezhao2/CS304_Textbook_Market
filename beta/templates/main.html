@@ -15,7 +15,7 @@
                 </p>
         </form>
         <form method="GET" action="{{url_for('filter')}}">
-            <p><label>Department:</label>
+            <p><label for="dept">Department:</label>
                 <select id="dept" name="department" required>
                     <option value="">choose</option>
                     {% for dept in depts %}
@@ -23,11 +23,11 @@
                     {% endfor %}
                 </select>
             </p>
-            <p id="cnum"><label >Course Number:</label>
+            <p id="cnum"><label for="num">Course Number:</label>
                 <select id="num" name="course_number" required>
                     <option value="">choose</option>
                     {% for num in nums %}
-                        <option value="{{num[0]}}">{{num[0]}}</option>
+                    <option value="{{num[0]}}">{{num[0]}}</option>
                     {% endfor %}
                 </select>
             </p>

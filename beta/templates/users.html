@@ -10,7 +10,8 @@
                 <img src="{{url_for('profilePic', username=username)}}" alt="{{username}}" id="thumbnail">
             </div> 
             {% if loggedInUser == username %} 
-                <input type="file" name="profilepic" accept="image/png, image/jpeg">
+                <label for="profilePic">Upload photo:</label>
+                <input type="file" name="profilepic" accept="image/png, image/jpeg" id="profilePic">
             {% endif %}
         </div>
     
@@ -41,9 +42,11 @@
             <span>
                 <form id="soldStatus"> 
                     {% if book['sold_status'] == 1 %}
-                        <input type="checkbox" name="markAsSold" value="{{book['id']}}" checked> Mark as Sold <br>
+                        <label for="soldStat">Mark as Sold</label>
+                        <input id="soldStat" type="checkbox" name="markAsSold" value="{{book['id']}}" checked>
                         {% else %}
-                        <input type="checkbox" name="markAsSold" value="{{book['id']}}"> Mark as Sold <br>
+                        <label for="soldStat">Mark as Sold</label>
+                        <input id="soldStat" type="checkbox" name="markAsSold" value="{{book['id']}}">
                     {% endif %}  
                 </form> 
             </span>
