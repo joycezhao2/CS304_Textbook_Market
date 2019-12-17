@@ -149,8 +149,8 @@ def filterBookAjax():
         deptSaved = session['dept']
         dept = deptSaved
     
-    # Haven't implemented auto updates in course number drop-down list
-    # will be handled in beta version
+    # Didn't implemented auto updates for course numbers  in the drop-down list
+    # Set to default 0 to execute the according SQL queries in lookup.py
     num = 0
 
     books = lookup.filterBook(dept,num,sort)
