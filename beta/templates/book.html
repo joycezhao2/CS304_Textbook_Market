@@ -83,7 +83,7 @@
 
 {% if seller != loggedInUser %}
     <h4>Contact Seller</h4>
-    <form method="POST" action="/send_mail/">
+    <form method="POST" action="{{url_for('send_mail')}}">
     <table id="contact">
         <p> Recipient: {{email}} </p>
         <tr><td><label for="subject">Subject:</td>
