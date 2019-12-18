@@ -149,8 +149,8 @@ def filterBookAjax():
         deptSaved = session['dept']
         dept = deptSaved
     
-    # Didn't implemented auto updates for course numbers  in the drop-down list
-    # Set to default 0 to execute the according SQL queries in lookup.py
+    # Didn't implemented auto updates for course numbers in the drop-down list
+    # Set num to 0 so that lookup.py can handle the Ajax case and the traditional route
     num = 0
 
     books = lookup.filterBook(dept,num,sort)
