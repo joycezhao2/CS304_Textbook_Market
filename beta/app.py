@@ -352,7 +352,6 @@ def editProfile(username):
         ext = user_filename.split('.')[-1]
         filename = secure_filename('{}.{}'.format(username,ext))
         pathname = os.path.join(app.config['UPLOADS'],filename)
-        print(pathname)
         pic.save(pathname)
         lookup.uploadProfilePic(filename, username)
     
@@ -419,7 +418,20 @@ def update(id):
         if request.form['submit'] == 'update':
             lookup.update(bookAuthor, bookPrice, bookProfessor, bookYear, id)
             flash('Fields updated successfully')
-    return redirect(url_for('book', id=id))
+    return redirect(request.referrer)
+
+''' Route that deletes a book your selling '''
+@app.route('/delete/', methods=["POST"])
+def delete():
+    if 'CAS_USERNAME' in session:
+        loggedInUser = session['CAS_USERNAME']
+    else:
+        return redirect(url_for('index'))
+
+    bid = request.form.get('bookid')
+    lookup.deleteBook(bid)
+    flash ('Book was deleted')
+    return redirect(url_for('user', username=loggedInUser))
 
 if __name__ == '__main__':
     import sys, os

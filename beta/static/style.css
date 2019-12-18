@@ -200,3 +200,11 @@ ul {
 .booklist {
     margin-bottom: 10px;
 }
+
+#booktitle {
+    padding-left: 0px;
+}
+
+#book-list {
+    padding-left: 25px;
+}

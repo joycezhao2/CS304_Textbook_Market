@@ -3,8 +3,8 @@ import dbi
 # Returns a database connection for that db
 def getConn(db):
     # this line is to allow db connection on a personal account
-    # dsn = dbi.read_cnf("~/.textbook.cnf")
-    dsn = dbi.read_cnf()
+    dsn = dbi.read_cnf("~/.textbook.cnf")
+    # dsn = dbi.read_cnf()
     conn = dbi.connect(dsn)
     dbi.select_db(conn,db)
     return conn
@@ -216,8 +216,9 @@ def uploadBook(dept, course_num, price, condition, title, author, description, s
         # insert the book into the database
         curs.execute('''insert into books(price, sold_status,`condition`, title, author,
                                         `description`,seller,course,pic, professor, `year`)
-                        values (%s,%s,%s,%s,%s,%s,%s,%s,%s)''',
-                        [price, 0, condition, title, author, description, seller, course_id, filename, professor, year])
+                        values (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)''',
+                        [price, 0, condition, title, author, 
+                                description, seller, course_id[0], filename, professor, year])
         return 1
 
 # Returns all information of a specific book
@@ -306,3 +307,11 @@ def getCourseByID(cid):
                     from courses where id=%s''',
                     [cid])
     return curs.fetchone()
+
+''' Deletes book in databse'''
+def deleteBook(bid):
+    CONN = getConn('textbooks_db')
+    curs = dbi.dictCursor(CONN)
+
+    curs.execute('''delete from books where id=%s''',
+                    [bid])

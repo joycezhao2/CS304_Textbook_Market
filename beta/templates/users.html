@@ -18,14 +18,13 @@
         <div class="profile-header">
             <h1>{{user['name']}}</h1>
             <p>Email: {{username+'@wellesley.edu'}}</p>
-            {% if user['bio'] %}
-                {% if loggedInUser == username %} 
-                    <textarea cols="35" rows="5" name="userBio">{{user['bio']}}</textarea>
-                {% else %}
-                    <p id="bio">{{user['bio']}}</p>
-                {% endif %}
+            {% if loggedInUser == username %}
+                <textarea cols="35" rows="5" name="userBio">{{user['bio']}}</textarea>
+            {% elif user['bio'] %}
+                <p id="bio">{{user['bio']}}</p>
             {% endif %}        
         </div>
+
     </div>
     {% if loggedInUser == username %} 
         <p> Click below after uploading a photo or editing your bio:</p>
