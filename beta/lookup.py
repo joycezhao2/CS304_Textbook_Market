@@ -218,7 +218,7 @@ def uploadBook(dept, course_num, price, condition, title, author, description, s
                                         `description`,seller,course,pic, professor, `year`)
                         values (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)''',
                         [price, 0, condition, title, author, 
-                                description, seller, course_id[0], filename, professor, year])
+                        description, seller, course_id[0], filename, professor, year])
         return 1
 
 ''' Returns all information of a specific book'''
