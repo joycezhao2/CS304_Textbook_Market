@@ -18,14 +18,13 @@
         <div class="profile-header">
             <h1>{{user['name']}}</h1>
             <p>Email: {{username+'@wellesley.edu'}}</p>
-            {% if user['bio'] %}
-                {% if loggedInUser == username %} 
-                    <textarea cols="35" rows="5" name="userBio">{{user['bio']}}</textarea>
-                {% else %}
-                    <p id="bio">{{user['bio']}}</p>
-                {% endif %}
+            {% if loggedInUser == username %}
+                <textarea cols="35" rows="5" name="userBio" aria-label="bio">{{user['bio']}}</textarea>
+            {% elif user['bio'] %}
+                <p id="bio">{{user['bio']}}</p>
             {% endif %}        
         </div>
+
     </div>
     {% if loggedInUser == username %} 
         <p> Click below after uploading a photo or editing your bio:</p>
@@ -42,11 +41,11 @@
             <span>
                 <form id="soldStatus"> 
                     {% if book['sold_status'] == 1 %}
-                        <label for="soldStat">Mark as Sold</label>
-                        <input id="soldStat" type="checkbox" name="markAsSold" value="{{book['id']}}" checked>
+                        <label for="{{book['id']}}">Mark as Sold</label>
+                        <input id="{{book['id']}}" type="checkbox" name="markAsSold" value="{{book['id']}}" checked>
                         {% else %}
-                        <label for="soldStat">Mark as Sold</label>
-                        <input id="soldStat" type="checkbox" name="markAsSold" value="{{book['id']}}">
+                        <label for="{{book['id']}}">Mark as Sold</label>
+                        <input id="{{book['id']}}" type="checkbox" name="markAsSold" value="{{book['id']}}">
                     {% endif %}  
                 </form> 
             </span>

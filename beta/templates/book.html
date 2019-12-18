@@ -69,16 +69,21 @@
     {% endif %}  
 </form>
 
-{% endif %}    
-
-<form method="POST" action="{{url_for('addCart')}}">
+<form method="POST" action="{{url_for('delete')}}">
     <input type="hidden" name="bookid" value="{{book['id']}}">
-    <input type="submit" name="submit" value="Add to Cart">
+    <input type="submit" name="submit" value="Delete Book">
 </form>
+
+{% elif book['sold_status'] == 0 %}    
+    <form method="POST" action="{{url_for('addCart')}}">
+        <input type="hidden" name="bookid" value="{{book['id']}}">
+        <input type="submit" name="submit" value="Add to Cart">
+    </form>
+{% endif %}  
 
 {% if seller != loggedInUser %}
     <h4>Contact Seller</h4>
-    <form method="POST" action="/send_mail/">
+    <form method="POST" action="{{url_for('send_mail')}}">
     <table id="contact">
         <p> Recipient: {{email}} </p>
         <tr><td><label for="subject">Subject:</td>
