@@ -39,7 +39,7 @@ app.config['CAS_VALIDATE_ROUTE'] = '/module.php/casserver/serviceValidate.php'
 app.config['CAS_AFTER_LOGIN'] = 'verify'
 app.config['UPLOADS'] = 'pic'
 
-# The default main page
+''' The default main page'''
 @app.route('/')
 def index():
     if 'CAS_USERNAME' in session:
@@ -47,7 +47,7 @@ def index():
         return redirect(url_for('search'))
     return render_template('login.html')
 
-# Route that checks if log-in information is correct
+''' Route that checks if log-in information is correct'''
 @app.route('/verify/', methods=["GET", "POST"])
 def verify():
     username = session['CAS_USERNAME']
@@ -66,8 +66,8 @@ def verify():
         lookup.createUser(name, username)
         return redirect(url_for('search'))
 
-# Route to handle the search page. 
-# When there is no search term, show all the books for sale
+''' Route to handle the search page. 
+    When there is no search term, show all the books for sale'''
 @app.route('/search/',  defaults={'term': ''})
 @app.route('/search/<term>', methods=["GET"])
 def search(term):
@@ -88,13 +88,13 @@ def search(term):
                             books=books,
                             loggedInUser=username)
 
-# Route to handle searching with a user input
+''' Route to handle searching with a user input'''
 @app.route('/searchBook/', methods=["POST"])
 def searchBook():
     search_term = request.form.get("keyword")
     return redirect(url_for('search', term=search_term))
 
-# Route to handle filtering with selected criterias (department, course number, sorting order)
+'''Route to handle filtering with selected criterias (department, course number, sorting order)'''
 @app.route('/filter/', methods=["GET"])
 def filter():
     if 'CAS_USERNAME' in session:
@@ -122,7 +122,7 @@ def filter():
         flash('form submission error' + str(err))
         return redirect(url_for('index'))
 
-# Route directing to the 'filter' route for searching
+'''Route directing to the 'filter' route for searching'''
 @app.route('/filterBook/', methods=["POST"])
 def filterBook():
     dept = request.form.get('department')
@@ -130,7 +130,7 @@ def filterBook():
     order = request.form.get('sorting')
     return redirect(url_for('filter', dept=dept, num=num, order=''))
 
-# Route handling ajax version of filtering books with criterias (department and sorting order)
+'''Route handling ajax version of filtering books with criterias (department and sorting order)'''
 @app.route('/filterBookAjax/',methods=["POST"])
 def filterBookAjax():
     if 'CAS_USERNAME' in session:
@@ -163,7 +163,7 @@ def filterBookAjax():
         print(err)
         return jsonify({'error':True, 'err':str(err)})
 
-# Route handling submission page where available course number will show up given a selected department
+'''Route handling submission page where available course number will show up given a selected department'''
 @app.route('/uploadBookAjax/', methods=['POST'])
 def uploadBookAjax():
     if 'CAS_USERNAME' in session:
@@ -181,7 +181,7 @@ def uploadBookAjax():
         print(err)
         return jsonify({'error':True, 'err':str(err)})
 
-# Route to handle uploading a book into the database
+''' Route to handle uploading a book into the database'''
 @app.route('/submit/', methods=['GET', 'POST'])
 def submit():
     if 'CAS_USERNAME' in session:
@@ -231,19 +231,19 @@ def submit():
                             depts=departments,
                             cnums=course_nums)
 
-# Route handling book pictures
+''' Route handling book pictures'''
 @app.route('/bookPic/<bid>/')
 def bookPic(bid):
     filename = lookup.getBookPic(bid)   
     return send_from_directory(app.config['UPLOADS'],filename[0])
 
-# Route handling user profile
+''' Route handling user profile'''
 @app.route('/profilePic/<username>/')
 def profilePic(username):
     filename = lookup.getUserPic(username)   
     return send_from_directory(app.config['UPLOADS'],filename[0])
 
-# Route handling adding to your cart (session based)
+'''Route handling adding to your cart (session based)'''
 @app.route('/addCart/', methods=["POST"])
 def addCart():
     cart = session.get('cart', {}) 
@@ -255,7 +255,7 @@ def addCart():
     flash('Book added to cart successfully')
     return redirect(request.referrer)
 
-# Route handling showing your cart and deleting from it
+'''Route handling showing your cart and deleting from it'''
 @app.route('/session/cart/', methods=['GET','POST'])
 def session_cart():
     if 'CAS_USERNAME' in session:
@@ -279,7 +279,7 @@ def session_cart():
         session['cart'] = cart
         return redirect(url_for('session_cart'))
 
-# Route to display a book
+'''Route to display a book'''
 @app.route('/book/<id>/')
 def book(id):
     if 'CAS_USERNAME' in session:
@@ -314,7 +314,7 @@ def book(id):
                             seller=book['seller'],
                             email=book['seller']+'@wellesley.edu')
 
-# Route to display a user
+'''Route to display a user'''
 @app.route('/users/<username>/')
 def user(username):
     if 'CAS_USERNAME' in session:
@@ -331,7 +331,7 @@ def user(username):
                             username=username,
                             loggedInUser=loggedInUser)  
 
-# Route to edit user profile
+'''Route to edit user profile'''
 @app.route('/editProfile/<username>/', methods=["GET", "POST"])
 def editProfile(username):
     if 'CAS_USERNAME' in session:
@@ -360,7 +360,7 @@ def editProfile(username):
     flash('Profile updated')
     return redirect(url_for('user', username=username))
 
-# Route to send an email to a user
+'''Route to send an email to a user'''
 @app.route('/send_mail/', methods=["GET", "POST"])
 def send_mail():
     if request.method == 'GET':
@@ -381,7 +381,7 @@ def send_mail():
             flash('form submission error'+str(err))
             return redirect(request.referrer)
 
-# Route handling the buttons displayed on the search page '''
+''' Route handling the buttons displayed on the search page '''
 @app.route('/bookreq/', methods=["POST"])
 def bookreq():
     submit = request.form.get("submit")
@@ -396,7 +396,7 @@ def bookreq():
     else:
         return redirect("/")
 
-# Route handling "mark as sold" checkbox with ajax
+'''Route handling "mark as sold" checkbox with Ajax'''
 @app.route('/update_sold_status_ajax/', methods=["POST"])
 def updateSoldStatusAjax():
     bid = request.form.get('id')
@@ -404,7 +404,7 @@ def updateSoldStatusAjax():
     status = lookup.setSoldStatus(bid,status)
     return jsonify({'sold_status': status})
 
-# Route that handles updating book information
+'''Route that handles updating book information'''
 @app.route('/update/<id>', methods=["GET", "POST"])
 def update(id):
     book = lookup.findBook(id)
@@ -420,7 +420,7 @@ def update(id):
             flash('Fields updated successfully')
     return redirect(request.referrer)
 
-''' Route that deletes a book your selling '''
+''' Route that deletes a book you're selling '''
 @app.route('/delete/', methods=["POST"])
 def delete():
     if 'CAS_USERNAME' in session:

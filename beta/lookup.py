@@ -1,6 +1,6 @@
 import dbi
 
-# Returns a database connection for that db
+''' Returns a database connection for that db '''
 def getConn(db):
     # this line is to allow db connection on a personal account
     # dsn = dbi.read_cnf("~/.textbook.cnf")
@@ -9,7 +9,7 @@ def getConn(db):
     dbi.select_db(conn,db)
     return conn
 
-# Returns the picture attached to a specified book
+'''Returns the picture attached to a specified book'''
 def getBookPic(bid):
     CONN = getConn('textbooks_db')
     curs = dbi.cursor(CONN)
@@ -20,7 +20,7 @@ def getBookPic(bid):
     filename = curs.fetchone()
     return filename
 
-# Returns a user's profile picture
+''' Returns a user's profile picture'''
 def getUserPic(username):
     CONN = getConn('textbooks_db')
     curs = dbi.cursor(CONN)
@@ -30,7 +30,7 @@ def getUserPic(username):
     filename = curs.fetchone()
     return filename
 
-# Returns all books with a search term
+''' Returns all books with a search term'''
 def searchBook(search_term):
     CONN = getConn('textbooks_db')
     curs = dbi.dictCursor(CONN)
@@ -41,7 +41,7 @@ def searchBook(search_term):
                 ['%'+search_term+'%'])
     return curs.fetchall()
 
-# Returns the books with given criterias (department, course number, sorting order)
+''' Returns the books with given criterias (department, course number, sorting order) '''
 def filterBook(dept, num, order):
     CONN = getConn('textbooks_db')
     curs = dbi.dictCursor(CONN)
@@ -146,7 +146,7 @@ def filterBook(dept, num, order):
                             [dept,num])
             return curs.fetchall()
             
-# Returns all existing departments in the database
+''' Returns all existing departments in the database '''
 def getAllDepts():
     CONN = getConn('textbooks_db')
     curs = dbi.cursor(CONN)
@@ -154,7 +154,7 @@ def getAllDepts():
     curs.execute('''select distinct department from courses''')
     return curs.fetchall()
 
-# Returns all existing course number in the database
+'''' Returns all existing course number in the database '''
 def getAllNums():
     CONN = getConn('textbooks_db')
     curs = dbi.cursor(CONN)
@@ -163,7 +163,7 @@ def getAllNums():
                     order by number asc''')
     return curs.fetchall()
 
-# Returns all existing departments that some user is selling a book for
+'''Returns all existing departments that some user is selling a book for'''
 def getSellingDepts():
     CONN = getConn('textbooks_db')
     curs = dbi.cursor(CONN)
@@ -175,7 +175,7 @@ def getSellingDepts():
                     and books.sold_status = 0''')
     return curs.fetchall()
 
-# Returns all existing course numbers that some user is selling a book for
+'''Returns all existing course numbers that some user is selling a book for'''
 def getSellingNums():
     CONN = getConn('textbooks_db')
     curs = dbi.cursor(CONN)
@@ -187,7 +187,7 @@ def getSellingNums():
                     and books.sold_status = 0''')
     return curs.fetchall()
 
-# Returns all course numbers associated with a given department
+''' Returns all course numbers associated with a given department'''
 def getCourseNumbers(dept):
     CONN = getConn('textbooks_db')
     curs = dbi.cursor(CONN)
@@ -197,7 +197,7 @@ def getCourseNumbers(dept):
                     [dept])
     return curs.fetchall()
 
-# Executes the upload of a book, returns whether insertion is successful 
+'''Executes the upload of a book, returns whether insertion is successful '''
 def uploadBook(dept, course_num, price, condition, title, author, description, seller, filename, professor, year):
     CONN = getConn('textbooks_db')
     curs = dbi.cursor(CONN)
@@ -221,7 +221,7 @@ def uploadBook(dept, course_num, price, condition, title, author, description, s
                                 description, seller, course_id[0], filename, professor, year])
         return 1
 
-# Returns all information of a specific book
+''' Returns all information of a specific book'''
 def findBook(book_id):
     CONN = getConn('textbooks_db')
     curs = dbi.dictCursor(CONN)
@@ -230,8 +230,7 @@ def findBook(book_id):
             [book_id])
     return curs.fetchone()
 
-# Creates a new user in the database
-# Creates a new user in the database
+''' Creates a new user in the database'''
 def createUser(name, username):
     CONN = getConn('textbooks_db')
     curs = dbi.dictCursor(CONN)
@@ -240,7 +239,7 @@ def createUser(name, username):
                     values(%s, %s, %s, %s)''',
                     [username, name, username+'@wellesley.edu', 'default-user.png', None])
 
-# Uploads a profile picture in the database
+'''Uploads a profile picture in the database'''
 def uploadProfilePic(pathname, username):
     CONN = getConn('textbooks_db')
     curs = dbi.dictCursor(CONN)
@@ -249,7 +248,7 @@ def uploadProfilePic(pathname, username):
                     where username=%s''',
                     [pathname, username])
 
-# Update the bio of a user
+''' Updates the bio of a user'''
 def updateBio(bio, username):
     CONN = getConn('textbooks_db')
     curs = dbi.dictCursor(CONN)
@@ -258,6 +257,7 @@ def updateBio(bio, username):
                     where username=%s''',
                     [bio, username])
 
+''' Updates book information '''
 def update(author, price, professor, year, id):
     CONN = getConn('textbooks_db')
     curs = dbi.dictCursor(CONN)
@@ -266,7 +266,7 @@ def update(author, price, professor, year, id):
                     where id=%s''',
                     [author, price, professor, year, id])
 
-# Returns the user with a given username
+'''Returns the user with a given username'''
 def searchUser(username):
     CONN = getConn('textbooks_db')
     curs = dbi.dictCursor(CONN)
@@ -275,7 +275,7 @@ def searchUser(username):
             [username])
     return curs.fetchone()
 
-# Returns all books a user is selling
+'''Returns all books a user is selling'''
 def findBooksBySeller(username):
     CONN = getConn('textbooks_db')
     curs = dbi.dictCursor(CONN)
@@ -284,7 +284,7 @@ def findBooksBySeller(username):
             [username])
     return curs.fetchall()
 
-# Updates the sold status of a given book
+'''Updates the sold status of a given book'''
 def setSoldStatus(book_id, status):
     CONN = getConn('textbooks_db')
     curs = dbi.cursor(CONN)
@@ -298,7 +298,7 @@ def setSoldStatus(book_id, status):
             [book_id])
         return 0
 
-# Returns the course matching the specific course id
+'''Returns the course matching the specific course id'''
 def getCourseByID(cid):
     CONN = getConn('textbooks_db')
     curs = dbi.dictCursor(CONN)
@@ -308,7 +308,7 @@ def getCourseByID(cid):
                     [cid])
     return curs.fetchone()
 
-''' Deletes book in databse'''
+''' Deletes book in database'''
 def deleteBook(bid):
     CONN = getConn('textbooks_db')
     curs = dbi.dictCursor(CONN)
